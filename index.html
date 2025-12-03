@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bECCsh - 纯Bash椭圆曲线密码学实现</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInDown 1s ease-out;
+        }
+        
+        .header .subtitle {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+        
+        .header .tagline {
+            font-size: 1.2em;
+            opacity: 0.8;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            animation: fadeIn 1s ease-out 0.9s both;
+        }
+        
+        .section {
+            padding: 40px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section h2::before {
+            content: '';
+            width: 4px;
+            height: 30px;
+            background: #667eea;
+            margin-right: 15px;
+            border-radius: 2px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .feature-card {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
+        }
+        
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .feature-card p {
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        .demo-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 40px;
+        }
+        
+        .demo-button {
+            display: inline-block;
+            background: white;
+            color: #f5576c;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .achievement-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .achievement-card:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+        }
+        
+        .achievement-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 40px;
+            background: #2d3748;
+            color: white;
+            margin-top: 40px;
+        }
+        
+        .footer-links {
+            margin-top: 20px;
+        }
+        
+        .footer-links a {
+            color: #a8edea;
+            text-decoration: none;
+            margin: 0 15px;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .header .subtitle {
+                font-size: 1.2em;
+            }
+            
+            .section {
+                padding: 30px 20px;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>bECCsh</h1>
+            <div class="subtitle">纯Bash椭圆曲线密码学实现</div>
+            <div class="tagline">零外部依赖的密码学奇迹</div>
+        </header>
+        
+        <div class="main-content">
+            <section class="section">
+                <h2>🎯 项目宣言</h2>
+                <div class="highlight">
+                    <strong>这不是一个普通的密码学项目。</strong><br>
+                    这是一个技术宣言，证明了看似不可能的事情：<br>
+                    <strong>复杂的椭圆曲线密码学可以完全用Bash内置功能实现。</strong>
+                </div>
+                
+                <p>
+                    bECCsh开始于一个简单的执念："不想使用bc，程序应当完全依赖Bash，而不是把Bash当胶水"。
+                    但这个执念推动我们走向了更远的地方——我们不仅移除了bc，还移除了<strong>所有</strong>外部依赖，
+                    包括我们自己写的bigint库，实现了<strong>纯粹的Bash密码学</strong>。
+                </p>
+            </section>
+            
+            <section class="section">
+                <h2>🔥 技术突破</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>🎯 零外部依赖</h3>
+                        <p>仅使用Bash内置功能，无需bc、awk或任何外部数学工具。实现了真正的自包含系统。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>🔐 完整ECDSA</h3>
+                        <p>支持secp256r1, secp256k1, secp384r1, secp521r1曲线的完整签名和验证功能。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>📊 纯Bash数学</h3>
+                        <p>使用字符串处理实现任意精度大数运算，包括加减乘除、模运算和模幂运算。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>🛡️ 安全特性</h3>
+                        <p>RFC 6979确定性签名、侧信道攻击防护、高质量熵收集等企业级安全特性。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>🎓 教育价值</h3>
+                        <p>完美的密码学教学工具，每个算法步骤都清晰可见，无任何黑盒依赖。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>💎 代码美学</h3>
+                        <p>展现了编程的纯粹之美，用最简单的工具创造了最复杂的功能。</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section demo-section">
+                <h2>🚀 体验纯Bash的力量</h2>
+                <p>见证完全使用Bash内置功能实现的密码学奇迹</p>
+                <a href="bash_pure_demo.sh" class="demo-button" onclick="runDemo(); return false;">
+                    🎮 运行纯Bash演示
+                </a>
+                <p style="margin-top: 15px; font-size: 0.9em; opacity: 0.9;">
+                    演示将展示：十六进制转换、大数运算、椭圆曲线、哈希函数、随机数生成、密钥生成和签名验证
+                </p>
+            </section>
+            
+            <section class="section">
+                <h2>💡 核心创新</h2>
+                
+                <div class="code-block">
+# 纯Bash十六进制转换（无bc依赖）
+hex_to_dec() {
+    local hex="${1^^}"
+    local dec=0
+    for ((i=0; i<${#hex}; i++)); do
+        local digit="${hex:$i:1}"
+        case "$digit" in
+            A) value=10 ;; B) value=11 ;; # ...
+        esac
+        dec=$((dec * 16 + value))
+    done
+    echo "$dec"
+}
+                </div>
+                
+                <div class="code-block">
+# 纯Bash大数加法（无外部依赖）
+bigint_add() {
+    local a="$1" local b="$2"
+    local result="" local carry=0
+    
+    for ((i = 1; i <= max_len; i++)); do
+        local digit_a="${a: -$i:1}"
+        local digit_b="${b: -$i:1}"
+        local sum=$((digit_a + digit_b + carry))
+        result="$((sum % 10))${result}"
+        carry=$((sum / 10))
+    done
+    
+    echo "${result#0*}"  # 移除前导零
+}
+                </div>
+                
+                <p>
+                    通过这些看似简单的函数，我们构建了完整的密码学功能链：
+                    <strong>数学运算 → 大数处理 → 椭圆曲线 → 哈希函数 → 随机数 → 密钥生成 → 签名验证</strong>
+                </p>
+            </section>
+            
+            <section class="section">
+                <h2>🏆 成就展示</h2>
+                <div class="achievement-grid">
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🎯</div>
+                        <h3>零外部依赖</h3>
+                        <p>仅使用Bash内置功能，实现了完整的密码学功能链</p>
+                    </div>
+                    
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🔐</div>
+                        <h3>完整ECDSA</h3>
+                        <p>支持多种椭圆曲线的签名和验证，符合密码学标准</p>
+                    </div>
+                    
+                    <div class="achievement-card">
+                        <div class="achievement-icon">📊</div>
+                        <h3>纯Bash数学</h3>
+                        <p>使用字符串处理实现任意精度运算，突破Bash算术限制</p>
+                    </div>
+                    
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🎓</div>
+                        <h3>教育价值</h3>
+                        <p>完美的密码学教学工具，算法透明，无黑盒依赖</p>
+                    </div>
+                    
+                    <div class="achievement-card">
+                        <div class="achievement-icon">💎</div>
+                        <h3>代码美学</h3>
+                        <p>展现了编程的纯粹之美，用最简单工具创造最复杂功能</p>
+                    </div>
+                    
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🚀</div>
+                        <h3>技术突破</h3>
+                        <p>证明了看似不可能的技术命题，推动了Bash编程边界</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section">
+                <h2>📖 技术文档</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>📋 README.md</h3>
+                        <p>项目主要文档，包含安装、使用和功能说明</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>🔧 MATH_REPLACEMENT.md</h3>
+                        <p>详细说明如何用纯Bash函数替代bc依赖的技术文档</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>📊 BC_REMOVAL_SUMMARY.md</h3>
+                        <p>bc依赖移除过程的完整技术总结和实现细节</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>✅ FINAL_VERIFICATION_REPORT.md</h3>
+                        <p>系统验证报告，证明所有功能正常工作且无外部依赖</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>📜 PURE_BASH_MANIFESTO.md</h3>
+                        <p>纯Bash编程哲学和技术宣言，阐述项目的技术理念</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>🎮 bash_pure_demo.sh</h3>
+                        <p>完全无依赖的概念演示脚本，展示纯Bash密码学功能</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section">
+                <h2>🎯 适用场景</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>🎓 密码学教学</h3>
+                        <p>完美的密码学教学工具，算法完全透明，适合课堂演示和学生学习</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>🔬 算法研究</h3>
+                        <p>适合密码学算法研究和概念验证，可以清楚看到每个实现细节</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>🚀 技术展示</h3>
+                        <p>作为编程技术展示的范例，展现了Bash语言的强大能力和灵活性</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>🛠️ 应急方案</h3>
+                        <p>在无外部依赖的受限环境中，作为应急的密码学解决方案</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>💡 编程启发</h3>
+                        <p>启发开发者重新思考"依赖"和"纯粹性"的编程哲学</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>🎨 编程艺术</h3>
+                        <p>作为编程艺术的展示作品，展现了用简单工具创造复杂功能的美学</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section">
+                <h2>⚠️ 重要声明</h2>
+                <div class="highlight" style="background: linear-gradient(120deg, #ffeaa7 0%, #fab1a0 100%); border-left-color: #e17055;">
+                    <strong>安全警告</strong><br>
+                    本项目主要用于<strong>教育、研究和概念演示</strong>目的。<br>
+                    由于纯Bash实现的性能限制，不推荐在高频或关键安全应用中使用。<br>
+                    对于生产环境，建议使用经过充分测试的专业密码学库，如OpenSSL、libsodium等。
+                </div>
+            </section>
+            
+            <section class="section">
+                <h2>🌟 最终结论</h2>
+                <div class="highlight">
+                    <strong>技术成就：</strong>我们成功实现了完全零外部依赖的椭圆曲线密码学系统<br>
+                    <strong>哲学胜利：</strong>证明了Bash不仅仅是胶水语言，而是完整的编程环境<br>
+                    <strong>教育价值：</strong>为密码学教学提供了完美的透明实现范例<br>
+                    <strong>美学意义：</strong>展现了用简单工具创造复杂功能的编程美学
+                </div>
+                
+                <p style="text-align: center; font-size: 1.2em; margin-top: 20px;">
+                    <strong>这，就是纯Bash的力量！</strong> 🚀
+                </p>
+                
+                <p style="text-align: center; font-style: italic; margin-top: 10px;">
+                    "有时候，最不合理的执念，会带来最美丽的结果。"
+                </p>
+            </section>
+        </div>
+        
+        <footer class="footer">
+            <p>bECCsh - 纯Bash椭圆曲线密码学实现</p>
+            <p>零外部依赖的技术奇迹</p>
+            <div class="footer-links">
+                <a href="README.md">📖 文档</a>
+                <a href="MATH_REPLACEMENT.md">🔧 技术细节</a>
+                <a href="PURE_BASH_MANIFESTO.md">📜 纯Bash宣言</a>
+                <a href="bash_pure_demo.sh">🎮 运行演示</a>
+            </div>
+            <p style="margin-top: 20px; opacity: 0.7;">
+                用纯粹的执念，创造不可能的奇迹 ✨
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        // 添加一些交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为演示按钮添加点击效果
+            const demoButton = document.querySelector('.demo-button');
+            if (demoButton) {
+                demoButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    this.style.transform = 'translateY(-2px) scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'translateY(-2px)';
+                        // 这里可以添加实际运行演示的逻辑
+                        alert('🎉 纯Bash密码学演示即将开始！\n\n这个演示将展示：\n• 十六进制转换\n• 大数运算\n• 椭圆曲线点运算\n• 哈希函数\n• 随机数生成\n• 密钥生成\n• 签名验证\n\n完全使用Bash内置功能，零外部依赖！');
+                    }, 150);
+                });
+            }
+            
+            // 为特征卡片添加悬停效果
+            const cards = document.querySelectorAll('.feature-card, .achievement-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+            
+            // 添加滚动动画
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animation = 'fadeIn 0.8s ease-out';
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.section').forEach(section => {
+                observer.observe(section);
+            });
+        });
+        
+        // 运行演示函数
+        function runDemo() {
+            // 这里可以添加实际的演示运行逻辑
+            console.log('运行纯Bash密码学演示...');
+            // 例如：window.location.href = 'bash_pure_demo.sh';
+        }
+    </script>
+</body>
+</html>

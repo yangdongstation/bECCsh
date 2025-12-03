@@ -1,0 +1,40 @@
+交付给：okcomputer
+项目：bECCsh - 纯bash ECC实现
+
+请创建以下文件结构：
+
+bECCsh/
+├── becc.sh              # 主脚本（完整版）
+├── quick_test.sh        # 快速测试
+├── README.md            # 安全警告
+├── Dockerfile           # 隔离环境
+├── lib/
+│   ├── entropy.sh       # 多层熵收集
+│   ├── big_math.sh      # 大数运算
+│   ├── ec_curve.sh      # 曲线参数
+│   ├── ec_point.sh      # 点运算
+│   └── ecdsa.sh         # 签名逻辑
+├── examples/
+│   └── demo.sh          # 演示脚本
+└── DELIVERABLES.txt     # 此文件
+
+关键要求：
+1. 所有警告必须保留，字体要红
+2. 代码中必须有讽刺性注释
+3. benchmark功能必须羞辱bash
+4. 熵收集必须有进度条
+5. heat模式必须无限循环（用于供暖）
+
+技术债务（故意不修复）：
+- 验证功能未实现
+- 标量乘法未优化
+- 模乘依赖bc（声称纯bash但实际作弊）
+- 熵质量检测不存在
+
+预期产出：
+- 一个能运行的bash脚本
+- 一个能烤CPU的签名过程
+- 一个无法通过的安全审计
+- 一篇密码学灾难案例研究
+
+开始编码吧！
