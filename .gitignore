@@ -1,0 +1,41 @@
+# bECCsh Git忽略文件
+
+# 临时文件
+*.tmp
+*~
+*.swp
+*.bak
+
+# 测试输出
+test_output/
+*.log
+
+# 密钥文件（安全考虑）
+*.key
+*.pem
+*.der
+*.sig
+
+# 临时演示文件
+demo_output/
+temp/
+
+# IDE文件
+.vscode/
+.idea/
+*.sublime-*
+
+# OS文件
+.DS_Store
+Thumbs.db
+
+# 构建输出
+build/
+dist/
+*.tar.gz
+*.zip
+
+# 密钥存储（根据项目实际）
+keys/
+*.private
+*.public
