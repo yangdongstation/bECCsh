@@ -8,7 +8,7 @@ echo "================================="
 echo "分析时间: $(date)"
 echo
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # 导入数学模块
 source "$SCRIPT_DIR/lib/bash_math.sh"

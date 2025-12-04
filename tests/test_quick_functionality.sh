@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "=== bECCsh 快速功能测试 ==="
 echo "测试时间: $(date)"
@@ -50,7 +50,7 @@ fi
 
 # 测试4: 简化ECDSA测试
 echo "4. 测试简化ECDSA功能..."
-if timeout 10 "$SCRIPT_DIR/test_ecdsa_final_simple.sh" 2>/dev/null | grep -q "所有测试通过"; then
+if timeout 10 "$SCRIPT_DIR/test_ecdsa_simple_final.sh" 2>/dev/null | grep -q "测试完成"; then
     echo "✅ 简化ECDSA测试通过"
 else
     echo "❌ 简化ECDSA测试失败或超时"

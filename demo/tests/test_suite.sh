@@ -4,6 +4,10 @@
 
 set -euo pipefail
 
+# 获取项目根目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+
 # 测试统计
 TESTS_TOTAL=0
 TESTS_PASSED=0
@@ -15,6 +19,32 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+# 通用库加载函数
+load_library() {
+    local lib_name="$1"
+    local found=false
+    
+    # 尝试多个可能的路径
+    local paths=(
+        "$PROJECT_ROOT/lib/$lib_name"
+        "$PROJECT_ROOT/beccsh/lib/$lib_name"
+        "$PROJECT_ROOT/beccsh/lib/${lib_name%.sh}_prof.sh"
+    )
+    
+    for path in "${paths[@]}"; do
+        if [[ -f "$path" ]]; then
+            source "$path"
+            found=true
+            return 0
+        fi
+    done
+    
+    if [[ "$found" == false ]]; then
+        echo "错误: 无法加载库文件: $lib_name" >&2
+        exit 1
+    fi
+}
 
 # 测试框架函数
 run_test() {
@@ -66,7 +96,15 @@ assert_file_exists() {
 
 # 数学运算测试
 test_bn_mod_add() {
-    source lib/big_math.sh
+    # 尝试多个可能的路径
+    if [ -f "$PROJECT_ROOT/beccsh/lib/big_math.sh" ]; then
+        source "$PROJECT_ROOT/beccsh/lib/big_math.sh"
+    elif [ -f "$PROJECT_ROOT/lib/big_math.sh" ]; then
+        source "$PROJECT_ROOT/lib/big_math.sh"
+    else
+        echo "错误: 无法找到 big_math.sh" >&2
+        exit 1
+    fi
     
     local result
     result=$(bn_mod_add "5" "3" "17")
@@ -77,7 +115,15 @@ test_bn_mod_add() {
 }
 
 test_bn_mod_sub() {
-    source lib/big_math.sh
+    # 尝试多个可能的路径
+    if [ -f "$PROJECT_ROOT/beccsh/lib/big_math.sh" ]; then
+        source "$PROJECT_ROOT/beccsh/lib/big_math.sh"
+    elif [ -f "$PROJECT_ROOT/lib/big_math.sh" ]; then
+        source "$PROJECT_ROOT/lib/big_math.sh"
+    else
+        echo "错误: 无法找到 big_math.sh" >&2
+        exit 1
+    fi
     
     local result
     result=$(bn_mod_sub "10" "3" "17")
@@ -88,7 +134,15 @@ test_bn_mod_sub() {
 }
 
 test_bn_mod_mul() {
-    source lib/big_math.sh
+    # 尝试多个可能的路径
+    if [ -f "$PROJECT_ROOT/beccsh/lib/big_math.sh" ]; then
+        source "$PROJECT_ROOT/beccsh/lib/big_math.sh"
+    elif [ -f "$PROJECT_ROOT/lib/big_math.sh" ]; then
+        source "$PROJECT_ROOT/lib/big_math.sh"
+    else
+        echo "错误: 无法找到 big_math.sh" >&2
+        exit 1
+    fi
     
     local result
     result=$(bn_mod_mul "5" "3" "17")
@@ -112,8 +166,17 @@ test_bn_mod_inverse() {
 
 # 椭圆曲线测试
 test_point_double() {
-    source lib/ec_curve.sh
-    source lib/ec_point.sh
+    # 尝试多个可能的路径加载椭圆曲线库
+    if [ -f "$PROJECT_ROOT/lib/ec_curve.sh" ]; then
+        source "$PROJECT_ROOT/lib/ec_curve.sh"
+        source "$PROJECT_ROOT/lib/ec_point.sh"
+    elif [ -f "$PROJECT_ROOT/beccsh/lib/ec_curve.sh" ]; then
+        source "$PROJECT_ROOT/beccsh/lib/ec_curve.sh"
+        source "$PROJECT_ROOT/beccsh/lib/ec_point.sh"
+    else
+        echo "错误: 无法找到椭圆曲线库文件" >&2
+        exit 1
+    fi
     
     # 测试点加倍
     local x3 y3
@@ -124,8 +187,8 @@ test_point_double() {
 }
 
 test_point_add() {
-    source lib/ec_curve.sh
-    source lib/ec_point.sh
+    load_library "ec_curve.sh"
+    load_library "ec_point.sh"
     
     # 测试点加法
     local x3 y3
@@ -136,8 +199,8 @@ test_point_add() {
 }
 
 test_scalar_mult() {
-    source lib/ec_curve.sh
-    source lib/ec_point.sh
+    load_library "ec_curve.sh"
+    load_library "ec_point.sh"
     
     # 测试标量乘法
     local rx ry
@@ -149,8 +212,8 @@ test_scalar_mult() {
 
 # ECDSA测试
 test_ecdsa_sign() {
-    source lib/ec_curve.sh
-    source lib/ecdsa.sh
+    load_library "ec_curve.sh"
+    load_library "ecdsa.sh"
     
     local hash="abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
     local k="123456789012345678901234567890123456789012345678901234567890"
@@ -190,7 +253,7 @@ test_ecdsa_verify() {
 
 # 熵收集测试
 test_entropy_collection() {
-    source lib/entropy.sh
+    load_library "entropy.sh"
     
     local entropy
     entropy=$(collect_entropy)
@@ -206,7 +269,7 @@ test_entropy_collection() {
 
 # 曲线参数测试
 test_curve_parameters() {
-    source lib/curves.sh
+    load_library "curves.sh"
     
     # 测试secp256r1
     set_curve "secp256r1"
@@ -225,7 +288,7 @@ test_curve_parameters() {
 
 # 密钥格式测试
 test_key_formats() {
-    source lib/key_formats.sh
+    load_library "key_formats.sh"
     
     local test_key="123456789012345678901234567890"
     local test_file="test_key.tmp"

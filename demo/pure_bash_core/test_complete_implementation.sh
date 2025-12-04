@@ -9,25 +9,25 @@ echo "================================"
 # 获取脚本目录
 SCRIPT_DIR="${BASH_SOURCE%/*}"
 
-# 尝试加载模块
+# 尝试加载模块 - 使用核心目录的正确路径
 echo "🔄 加载纯Bash模块..."
-if source "$SCRIPT_DIR/pure_bash_complete.sh" 2>/dev/null; then
+if source "$SCRIPT_DIR/../../core/lib/pure_bash/pure_bash_complete.sh" 2>/dev/null; then
     echo "✅ 模块加载成功"
-elif source "$(dirname "$0")/pure_bash_complete.sh" 2>/dev/null; then
+elif source "$(dirname "$0")/../../core/lib/pure_bash/pure_bash_complete.sh" 2>/dev/null; then
     echo "✅ 模块加载成功（使用相对路径）"
 else
     echo "❌ 无法加载pure_bash_complete.sh模块"
     echo "  尝试单独加载扩展模块..."
     
     # 尝试单独加载模块
-    if source "$SCRIPT_DIR/pure_bash_bigint_extended.sh" 2>/dev/null; then
+    if source "$SCRIPT_DIR/../../core/lib/pure_bash/pure_bash_bigint_extended.sh" 2>/dev/null; then
         echo "✅ 扩展大数模块加载成功"
     else
         echo "❌ 无法加载扩展大数模块"
         exit 1
     fi
     
-    if source "$SCRIPT_DIR/pure_bash_extended_crypto.sh" 2>/dev/null; then
+    if source "$SCRIPT_DIR/../../core/lib/pure_bash/pure_bash_extended_crypto.sh" 2>/dev/null; then
         echo "✅ 扩展密码学模块加载成功"
     else
         echo "❌ 无法加载扩展密码学模块"
@@ -43,15 +43,15 @@ echo
 echo "1. 基础大数运算测试:"
 echo "--------------------"
 
-local test_num1="123456789012345678901234567890"
-local test_num2="987654321098765432109876543210"
+test_num1="123456789012345678901234567890"
+test_num2="987654321098765432109876543210"
 
 echo "  测试数1: $test_num1 (${#test_num1} 位)"
 echo "  测试数2: $test_num2 (${#test_num2} 位)"
 
 # 测试加法
 echo "  测试加法..."
-local sum_result=$(purebash_bigint_add "$test_num1" "$test_num2" 2>/dev/null)
+sum_result=$(purebash_bigint_add "$test_num1" "$test_num2" 2>/dev/null)
 if [[ -n "$sum_result" ]]; then
     echo "  ✅ 加法成功: $sum_result"
 else
@@ -60,7 +60,7 @@ fi
 
 # 测试减法
 echo "  测试减法..."
-local diff_result=$(purebash_bigint_subtract "$test_num2" "$test_num1" 2>/dev/null)
+diff_result=$(purebash_bigint_subtract "$test_num2" "$test_num1" 2>/dev/null)
 if [[ -n "$diff_result" ]]; then
     echo "  ✅ 减法成功: $diff_result"
 else
@@ -69,7 +69,7 @@ fi
 
 # 测试乘法
 echo "  测试乘法..."
-local product_result=$(purebash_bigint_multiply "$test_num1" "12345" 2>/dev/null)
+product_result=$(purebash_bigint_multiply "$test_num1" "12345" 2>/dev/null)
 if [[ -n "$product_result" ]]; then
     echo "  ✅ 乘法成功: $product_result"
 else
@@ -78,7 +78,7 @@ fi
 
 # 测试模运算
 echo "  测试模运算..."
-local mod_result=$(purebash_bigint_mod "$test_num1" "97" 2>/dev/null)
+mod_result=$(purebash_bigint_mod "$test_num1" "97" 2>/dev/null)
 if [[ -n "$mod_result" ]]; then
     echo "  ✅ 模运算成功: $mod_result"
 else
@@ -93,7 +93,7 @@ echo "-------------------"
 
 echo "  生成大随机数..."
 for i in {1..3}; do
-    local random_result=$(purebash_random_extended "256" "1000000000000000000000000000000000000000" 2>/dev/null)
+    random_result=$(purebash_random_extended "256" "1000000000000000000000000000000000000000" 2>/dev/null)
     if [[ -n "$random_result" ]]; then
         echo "  ✅ 随机数 $i: $random_result"
     else
@@ -107,8 +107,8 @@ echo
 echo "3. 扩展哈希测试:"
 echo "----------------"
 
-local test_msg="Hello, Extended Pure Bash Cryptography!"
-local hash_result=$(purebash_sha256_extended "$test_msg" 2>/dev/null)
+test_msg="Hello, Extended Pure Bash Cryptography!"
+hash_result=$(purebash_sha256_extended "$test_msg" 2>/dev/null)
 if [[ -n "$hash_result" ]]; then
     echo "  ✅ 扩展哈希成功: $hash_result"
 else
@@ -148,9 +148,9 @@ echo "================================"
 echo "🔍 测试完成总结:"
 
 # 检查哪些功能可用
-local available_functions=()
-local total_functions=0
-local working_functions=0
+available_functions=()
+total_functions=0
+working_functions=0
 
 # 检查基础函数
 for func in purebash_bigint_add purebash_bigint_subtract purebash_bigint_multiply purebash_bigint_mod purebash_random_extended purebash_sha256_extended; do

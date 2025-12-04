@@ -36,7 +36,9 @@ source "${LIB_DIR}/security.sh"
 source "${LIB_DIR}/asn1.sh"
 source "${LIB_DIR}/entropy.sh"
 # 导入安全功能
-source "${SCRIPT_DIR}/security_functions.sh"
+source "${SCRIPT_DIR}/tools/security_functions.sh" 2>/dev/null || {
+    echo "警告: 无法加载安全功能模块" >&2
+}
 
 # 错误代码
 readonly ERR_INVALID_INPUT=1

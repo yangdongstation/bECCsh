@@ -8,7 +8,7 @@ echo "================================="
 echo "分析时间: $(date)"
 echo
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # 运行极限测试并捕获详细输出
 echo "运行极限测试..."
@@ -19,7 +19,7 @@ exec 5>&1  # 保存原始stdout
 exec 6>&2  # 保存原始stderr
 
 # 运行测试并捕获所有输出
-test_output=$(bash "$SCRIPT_DIR/extreme_test_math_modules.sh" 2>&1)
+test_output=$(bash "$SCRIPT_DIR/tests_archive/extreme_tests/extreme_test_math_modules.sh" 2>&1)
 test_exit_code=$?
 
 echo "测试退出码: $test_exit_code"

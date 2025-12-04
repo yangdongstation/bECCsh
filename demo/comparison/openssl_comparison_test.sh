@@ -4,6 +4,10 @@
 
 set -euo pipefail
 
+# 获取脚本目录和项目根目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+
 # 颜色定义
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -171,7 +175,7 @@ test_random() {
     hexdump -C openssl_random.bin > openssl_random.hex
     
     # bECCsh随机数生成（如果可用）
-    if [[ -f "../becc.sh" ]]; then
+    if [[ -f "${PROJECT_ROOT}/becc.sh" ]]; then
         print_info "使用bECCsh生成随机数..."
         # 这里需要调用bECCsh的随机数生成功能
         # 由于bECCsh主要关注椭圆曲线，我们使用系统随机源作为对比
@@ -303,7 +307,7 @@ test_keygen() {
     if [[ -f "../becc.sh" ]]; then
         print_info "使用bECCsh生成密钥..."
         for curve in "${curves[@]}"; do
-            if ../becc.sh keygen -c "$curve" -f "beccsh_${curve}_private.pem" 2>/dev/null; then
+            if "${PROJECT_ROOT}/becc.sh" keygen -c "$curve" -f "beccsh_${curve}_private.pem" 2>/dev/null; then
                 print_success "bECCsh生成密钥对成功"
                 
                 # 比较密钥格式和长度
@@ -364,14 +368,14 @@ test_sign_verify() {
         fi
         
         # bECCsh签名（如果可用）
-        if [[ -f "../becc.sh" ]] && [[ -f "beccsh_${curve}_private.pem" ]]; then
+        if [[ -f "${PROJECT_ROOT}/becc.sh" ]] && [[ -f "beccsh_${curve}_private.pem" ]]; then
             print_info "使用bECCsh进行签名..."
             
-            if ../becc.sh sign -c "$curve" -k "beccsh_${curve}_private.pem" -m "$message" -f "beccsh_signature.der" 2>/dev/null; then
+            if "${PROJECT_ROOT}/becc.sh" sign -c "$curve" -k "beccsh_${curve}_private.pem" -m "$message" -f "beccsh_signature.der" 2>/dev/null; then
                 print_success "bECCsh签名生成成功"
                 
                 # 验证签名
-                if ../becc.sh verify -c "$curve" -k "beccsh_${curve}_public.pem" -m "$message" -s "beccsh_signature.der" 2>/dev/null; then
+                if "${PROJECT_ROOT}/becc.sh" verify -c "$curve" -k "beccsh_${curve}_public.pem" -m "$message" -s "beccsh_signature.der" 2>/dev/null; then
                     print_success "bECCsh签名验证通过"
                 else
                     print_error "bECCsh签名验证失败"

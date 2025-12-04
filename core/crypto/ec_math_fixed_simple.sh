@@ -1,184 +1,204 @@
 #!/bin/bash
-# 修复的椭圆曲线数学运算 - 简化版本
-# 专注于功能正确性，不在乎性能
+# 简化的椭圆曲线数学运算修复版本
 
 set -euo pipefail
 
-# 简化的模运算
+# 导入基础数学库
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../../lib/bash_math.sh"
+source "${SCRIPT_DIR}/../../lib/bigint.sh"
+
+# 简单的模运算函数
 mod_simple() {
     local a="$1"
     local m="$2"
-    echo $((a % m))
+    
+    # 处理负数
+    if [[ "$a" =~ ^- ]]; then
+        local pos_a="${a#-}"
+        local mod_pos=$((pos_a % m))
+        echo $((m - mod_pos))
+    else
+        echo $((a % m))
+    fi
 }
 
-# 简化的模逆元
+# 简单的模逆元函数 (扩展欧几里得算法)
 mod_inverse_simple() {
     local a="$1"
     local m="$2"
     
-    # 扩展欧几里得算法简化版
-    local t=0 newt=1
-    local r=$m newr=$a
+    # 确保a是正数且在模范围内
+    a=$(mod_simple "$a" "$m")
     
-    while [[ $newr -ne 0 ]]; do
-        local quotient=$((r / newr))
-        local temp=$newr
-        newr=$((r - quotient * newr))
-        r=$temp
+    # 扩展欧几里得算法
+    local t=0
+    local new_t=1
+    local r="$m"
+    local new_r="$a"
+    
+    while [[ "$new_r" -ne 0 ]]; do
+        local quotient=$((r / new_r))
         
-        temp=$newt
-        newt=$((t - quotient * newt))
-        t=$temp
+        # 交换t和new_t
+        local temp_t="$t"
+        t="$new_t"
+        new_t=$((temp_t - quotient * new_t))
+        
+        # 交换r和new_r
+        local temp_r="$r"
+        r="$new_r"
+        new_r=$((temp_r - quotient * new_r))
     done
     
-    if [[ $t -lt 0 ]]; then
+    if [[ "$r" -gt 1 ]]; then
+        echo "0"  # 逆元不存在
+        return 1
+    fi
+    
+    if [[ "$t" -lt 0 ]]; then
         t=$((t + m))
     fi
     
-    echo $t
+    echo "$t"
 }
 
-# 正确的椭圆曲线点加法
+# 修复的椭圆曲线点加法
 curve_point_add_correct() {
     local x1="$1" y1="$2" x2="$3" y2="$4" a="$5" p="$6"
     
-    # 处理无穷远点
+    # 处理无穷远点情况
     if [[ "$x1" == "0" && "$y1" == "0" ]]; then
         echo "$x2 $y2"
         return 0
     fi
+    
     if [[ "$x2" == "0" && "$y2" == "0" ]]; then
         echo "$x1 $y1"
         return 0
     fi
     
-    # 计算斜率
-    local lambda
+    # 检查是否是同一个点
     if [[ "$x1" == "$x2" ]]; then
         if [[ "$y1" == "$y2" ]]; then
-            # 倍点运算: λ = (3x² + a) / (2y) mod p
-            local three_x1_sq=$((3 * x1 * x1))
-            local numerator=$((three_x1_sq + a))
-            local two_y1=$((2 * y1))
-            
-            # 确保分子为正
-            while [[ $numerator -lt 0 ]]; do
-                numerator=$((numerator + p))
-            done
-            
-            # 确保分母为正
-            while [[ $two_y1 -lt 0 ]]; do
-                two_y1=$((two_y1 + p))
-            done
-            
-            # 检查分母是否为0 (特殊情况: y=0)
-            if [[ $two_y1 -eq 0 ]]; then
-                # 当y=0时，倍点运算结果为无穷远点
-                echo "0 0"
+            # 点加倍
+            if [[ "$y1" == "0" ]]; then
+                echo "0 0"  # 无穷远点
                 return 0
             fi
             
-            # 计算模逆元
-            local two_y1_inv=$(mod_inverse_simple "$two_y1" "$p")
-            lambda=$(((numerator * two_y1_inv) % p))
+            # λ = (3x₁² + a) / (2y₁) mod p
+            local x1_squared=$((x1 * x1))
+            local numerator=$((3 * x1_squared + a))
+            local denominator=$((2 * y1))
+            
+            local inv_denominator=$(mod_inverse_simple "$denominator" "$p")
+            if [[ "$inv_denominator" == "0" ]]; then
+                echo "0 0"
+                return 1
+            fi
+            
+            local lambda=$((numerator * inv_denominator % p))
+            
         else
+            # 互为相反数
             echo "0 0"  # 无穷远点
             return 0
         fi
     else
-        # 一般点加法: λ = (y₂ - y₁) / (x₂ - x₁) mod p
+        # 点加法: λ = (y₂ - y₁) / (x₂ - x₁) mod p
         local numerator=$((y2 - y1))
         local denominator=$((x2 - x1))
         
-        # 确保分子为正
-        while [[ $numerator -lt 0 ]]; do
+        # 处理负数
+        if [[ "$numerator" -lt 0 ]]; then
             numerator=$((numerator + p))
-        done
-        
-        # 确保分母为正
-        while [[ $denominator -lt 0 ]]; do
+        fi
+        if [[ "$denominator" -lt 0 ]]; then
             denominator=$((denominator + p))
-        done
-        
-        # 检查分母是否为0
-        if [[ $denominator -eq 0 ]]; then
-            # 当x坐标相同但y不同时，结果为无穷远点
-            echo "0 0"
-            return 0
         fi
         
-        # 计算模逆元
-        local denom_inv=$(mod_inverse_simple "$denominator" "$p")
-        lambda=$(((numerator * denom_inv) % p))
+        local inv_denominator=$(mod_inverse_simple "$denominator" "$p")
+        if [[ "$inv_denominator" == "0" ]]; then
+            echo "0 0"
+            return 1
+        fi
+        
+        local lambda=$((numerator * inv_denominator % p))
     fi
     
-    # 计算结果点
-    local x3=$(((lambda * lambda - x1 - x2) % p))
-    if [[ $x3 -lt 0 ]]; then
-        x3=$((x3 + p))
-    fi
+    # x₃ = λ² - x₁ - x₂ mod p
+    local lambda_squared=$((lambda * lambda))
+    local x3=$((lambda_squared - x1 - x2))
+    x3=$(mod_simple "$x3" "$p")
     
-    local y3=$(((lambda * (x1 - x3) - y1) % p))
-    if [[ $y3 -lt 0 ]]; then
-        y3=$((y3 + p))
-    fi
+    # y₃ = λ(x₁ - x₃) - y₁ mod p
+    local y3=$((lambda * (x1 - x3) - y1))
+    y3=$(mod_simple "$y3" "$p")
     
     echo "$x3 $y3"
 }
 
 # 简化的标量乘法
 curve_scalar_mult_simple() {
-    local k="$1" gx="$2" gy="$3" a="$4" p="$5"
+    local k="$1" x="$2" y="$3" a="$4" p="$5"
     
+    # 处理k=0的情况
+    if [[ "$k" == "0" ]]; then
+        echo "0 0"
+        return 0
+    fi
+    
+    # 处理k=1的情况
+    if [[ "$k" == "1" ]]; then
+        echo "$x $y"
+        return 0
+    fi
+    
+    # 使用二进制展开算法
     local result_x="0"
     local result_y="0"
-    local current_x="$gx"
-    local current_y="$gy"
+    local temp_x="$x"
+    local temp_y="$y"
     
-    while [[ $k -gt 0 ]]; do
-        if [[ $((k % 2)) -eq 1 ]]; then
-            # result = result + current
-            if [[ $result_x -ne 0 || $result_y -ne 0 ]]; then
-                local result=$(curve_point_add_correct "$result_x" "$result_y" "$current_x" "$current_y" "$a" "$p")
-                result_x=$(echo "$result" | cut -d' ' -f1)
-                result_y=$(echo "$result" | cut -d' ' -f2)
+    local n="$k"
+    while [[ "$n" -gt 0 ]]; do
+        if [[ $((n & 1)) -eq 1 ]]; then
+            # result = result + temp
+            if [[ "$result_x" == "0" && "$result_y" == "0" ]]; then
+                result_x="$temp_x"
+                result_y="$temp_y"
             else
-                result_x="$current_x"
-                result_y="$current_y"
+                local add_result=$(curve_point_add_correct "$result_x" "$result_y" "$temp_x" "$temp_y" "$a" "$p")
+                result_x=$(echo "$add_result" | cut -d' ' -f1)
+                result_y=$(echo "$add_result" | cut -d' ' -f2)
             fi
         fi
         
-        # current = current + current (倍点)
-        local current=$(curve_point_add_correct "$current_x" "$current_y" "$current_x" "$current_y" "$a" "$p")
-        current_x=$(echo "$current" | cut -d' ' -f1)
-        current_y=$(echo "$current" | cut -d' ' -f2)
+        # temp = temp + temp (点加倍)
+        if [[ "$n" -gt 1 ]]; then
+            local double_result=$(curve_point_add_correct "$temp_x" "$temp_y" "$temp_x" "$temp_y" "$a" "$p")
+            temp_x=$(echo "$double_result" | cut -d' ' -f1)
+            temp_y=$(echo "$double_result" | cut -d' ' -f2)
+        fi
         
-        k=$((k / 2))
+        n=$((n >> 1))
     done
     
     echo "$result_x $result_y"
 }
 
-# 如果直接运行此脚本，执行测试
+# 导出函数
+export -f mod_simple mod_inverse_simple curve_point_add_correct curve_scalar_mult_simple
+
+# 如果直接运行此脚本，进行简单测试
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    echo "修复的椭圆曲线数学运算测试"
-    echo "==================================="
+    echo "=== 椭圆曲线数学运算简单测试 ==="
     
-    # 测试基本运算
-    echo "测试模运算:"
-    echo "10 mod 7 = $(mod_simple 10 7)"
-    echo "15 mod 6 = $(mod_simple 15 6)"
+    echo "测试 mod_simple(10, 7): $(mod_simple 10 7) (期望: 3)"
+    echo "测试 mod_inverse_simple(3, 7): $(mod_inverse_simple 3 7) (期望: 5)"
+    echo "测试 curve_point_add_correct(3,10,3,10,1,23): $(curve_point_add_correct 3 10 3 10 1 23) (期望: 7 12)"
+    echo "测试 curve_scalar_mult_simple(2,3,10,1,23): $(curve_scalar_mult_simple 2 3 10 1 23) (期望: 7 12)"
     
-    # 测试模逆元
-    echo "测试模逆元:"
-    echo "3⁻¹ mod 7 = $(mod_inverse_simple 3 7)"
-    echo "5⁻¹ mod 11 = $(mod_inverse_simple 5 11)"
-    
-    # 测试点加法
-    echo "测试点加法:"
-    test_result=$(curve_point_add_correct "3" "4" "1" "2" "1" "7")
-    echo "(3,4) + (1,2) on y² = x³ + x + 1 mod 7 = $test_result"
-    
-    echo "==================================="
-    echo "✅ 修复的数学运算测试完成"
+    echo "✅ 椭圆曲线数学运算测试完成"
 fi

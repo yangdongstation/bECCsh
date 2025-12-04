@@ -14,7 +14,7 @@ readonly EC_POINT_LOADED=1
 source "$(dirname "${BASH_SOURCE[0]}")/bash_math.sh"
 
 # 导入大数运算库
-source "$(dirname "${BASH_SOURCE[0]}")/bigint.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/bash_bigint.sh"
 
 # 点运算错误处理
 ec_point_error() {

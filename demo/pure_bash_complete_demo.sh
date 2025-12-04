@@ -7,9 +7,9 @@
 SCRIPT_DIR="${BASH_SOURCE%/*}"
 
 # 加载完整纯Bash实现
-source "$SCRIPT_DIR/pure_bash_complete.sh" 2>/dev/null || {
+source "$SCRIPT_DIR/../core/lib/pure_bash/pure_bash_complete.sh" 2>/dev/null || {
     # 如果失败，尝试相对路径
-    source "$(dirname "$0")/pure_bash_complete.sh" 2>/dev/null || {
+    source "$(dirname "$0")/../core/lib/pure_bash/pure_bash_complete.sh" 2>/dev/null || {
         echo "错误: 无法加载pure_bash_complete.sh模块" >&2
         exit 1
     }
@@ -31,8 +31,8 @@ echo "1. 基本大数运算演示:"
 echo "-----------------------"
 
 # 生成大测试数
-local big_num1="1234567890123456789012345678901234567890"
-local big_num2="9876543210987654321098765432109876543210"
+big_num1="1234567890123456789012345678901234567890"
+big_num2="9876543210987654321098765432109876543210"
 
 echo "  大数1: $big_num1"
 echo "  大数2: $big_num2"
@@ -40,10 +40,10 @@ echo "  位数: ${#big_num1} 位"
 echo
 
 echo "  执行运算..."
-local sum=$(purebash_bigint_add "$big_num1" "$big_num2")
-local diff=$(purebash_bigint_subtract "$big_num2" "$big_num1")
-local product=$(purebash_bigint_multiply "$big_num1" "12345")
-local mod_result=$(purebash_bigint_mod "$big_num1" "97")
+sum=$(purebash_bigint_add "$big_num1" "$big_num2")
+diff=$(purebash_bigint_subtract "$big_num2" "$big_num1")
+product=$(purebash_bigint_multiply "$big_num1" "12345")
+mod_result=$(purebash_bigint_mod "$big_num1" "97")
 
 echo "  加法结果: $sum"
 echo "  减法结果: $diff"
@@ -57,7 +57,7 @@ echo "-------------------------"
 
 echo "  生成大随机数..."
 for i in {1..3}; do
-    local big_random=$(purebash_random_extended "256" "1000000000000000000000000000000000000000")
+    big_random=$(purebash_random_extended "256" "1000000000000000000000000000000000000000")
     echo "  大随机数 $i: $big_random"
 done
 echo
@@ -66,7 +66,7 @@ echo
 echo "3. 扩展哈希函数演示:"
 echo "---------------------"
 
-local test_messages=(
+test_messages=(
     "Hello, Pure Bash Cryptography!"
     "This is a test message for extended hash function."
     "bECCsh: 世界首个纯Bash椭圆曲线密码学实现！"
@@ -74,7 +74,7 @@ local test_messages=(
 
 echo "  测试扩展版哈希函数..."
 for msg in "${test_messages[@]}"; do
-    local hash=$(purebash_sha256_extended "$msg")
+    hash=$(purebash_sha256_extended "$msg")
     echo "  消息: '$msg'"
     echo "  扩展哈希: $hash"
     echo
@@ -97,7 +97,7 @@ echo
 echo "5. 性能测试演示:"
 echo "------------------"
 
-local test_big_num="123456789012345678901234567890123456789012345678901234567890"
+test_big_num="123456789012345678901234567890123456789012345678901234567890"
 echo "  测试大数: $test_big_num"
 echo "  位数: ${#test_big_num} 位"
 

@@ -14,13 +14,14 @@ readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly LIB_DIR="${SCRIPT_DIR}/lib"
 readonly CORE_DIR="${SCRIPT_DIR}/core"
 
-# 导入基础库
+# 导入基础库 - 注意导入顺序，避免循环导入
 source "${LIB_DIR}/bash_math.sh"
 source "${LIB_DIR}/bigint.sh"
 source "${LIB_DIR}/ec_curve.sh"
 source "${LIB_DIR}/ec_point.sh"
 source "${LIB_DIR}/asn1.sh"
 source "${LIB_DIR}/entropy.sh"
+source "${LIB_DIR}/security.sh"
 
 # 导入修复的ECDSA函数
 source "${CORE_DIR}/crypto/ecdsa_fixed.sh" 2>/dev/null || {
@@ -413,7 +414,7 @@ cmd_verify() {
         log $LOG_INFO "签名验证成功"
         echo "VALID"
         return 0
-> fi
+    fi
     
     log $LOG_WARN "签名验证失败"
     echo "INVALID"
@@ -422,6 +423,11 @@ cmd_verify() {
 
 # 运行测试套件
 cmd_test() {
+    # 初始化密码学库（如果尚未初始化）
+    if [[ -z "${CURRENT_CURVE_SIMPLE:-}" ]]; then
+        init_crypto
+    fi
+    
     log $LOG_INFO "运行修复版bECCsh测试套件"
     
     echo "测试修复的ECDSA功能..."

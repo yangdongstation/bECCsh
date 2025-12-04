@@ -4,12 +4,15 @@
 
 set -euo pipefail
 
-# 脚本目录
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 脚本目录 (避免重复定义)
+if [[ -z "${SCRIPT_DIR:-}" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
 
 # 导入修复的数学函数
-source "${SCRIPT_DIR}/ec_math_fixed.sh" 2>/dev/null || {
-    echo "错误: 无法加载修复的数学函数" >&2
+LOCAL_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${LOCAL_SCRIPT_DIR}/ec_math_fixed.sh" 2>/dev/null || {
+    echo "错误: 无法加载修复的数学函数 (路径: ${LOCAL_SCRIPT_DIR}/ec_math_fixed.sh)" >&2
     exit 1
 }
 
@@ -360,3 +363,6 @@ test_fixed_ecdsa() {
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     test_fixed_ecdsa
 fi
+
+# 导出函数以便其他脚本使用
+export -f generate_deterministic_k_fixed generate_ecdsa_signature verify_ecdsa_signature_fixed

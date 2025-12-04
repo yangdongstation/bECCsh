@@ -1,6 +1,10 @@
 #!/bin/bash
 # demo.sh - 演示bECCsh的基本用法
 
+# 获取脚本目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
 echo "🎭 bECCsh 演示脚本"
 echo "=================="
 echo ""
@@ -15,14 +19,14 @@ echo ""
 echo "按回车开始演示，或按Ctrl+C退出..."
 read
 
-# 检查是否在正确目录
-if [ ! -f "../becc.sh" ]; then
-    echo "错误：请将当前目录切换到bECCsh项目根目录"
+# 检查主程序是否存在
+if [ ! -f "${PROJECT_ROOT}/becc.sh" ]; then
+    echo "错误：无法找到bECCsh主程序: ${PROJECT_ROOT}/becc.sh"
     exit 1
 fi
 
 echo "1. 生成密钥对..."
-../becc.sh genkey
+"${PROJECT_ROOT}/becc.sh" genkey
 
 echo ""
 echo "2. 创建测试文件..."
@@ -36,12 +40,12 @@ echo "✓ 测试文件已创建"
 
 echo ""
 echo "3. 签名文件..."
-../becc.sh sign test_message.txt
+"${PROJECT_ROOT}/becc.sh" sign test_message.txt
 
 echo ""
 echo "4. 尝试验证签名..."
 echo "注意：验证功能尚未实现，所以会显示失败消息"
-../becc.sh verify test_message.txt test_message.txt.sig || true
+"${PROJECT_ROOT}/becc.sh" verify test_message.txt test_message.txt.sig || true
 
 echo ""
 echo "演示完成！"

@@ -366,6 +366,6 @@ asn1_test() {
 # 如果直接运行此脚本，执行测试
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     # 初始化必要的库
-    source "$(dirname "${BASH_SOURCE[0]}")/ecdsa.sh"
+    source "$(dirname "${BASH_SOURCE[0]}")/pure_bash_crypto.sh"
     asn1_test
 fi

@@ -8,7 +8,7 @@ echo "===================="
 echo "测试时间: $(date)"
 echo
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "1. 测试Bash数学模块"
 echo "==================="
@@ -108,7 +108,10 @@ echo
 echo "4. 测试曲线选择器模块"
 echo "====================="
 
-source "$SCRIPT_DIR/core/crypto/curve_selector_simple.sh"
+source "${SCRIPT_DIR}/core/crypto/curve_selector_simple.sh" 2>/dev/null || {
+    echo "曲线选择器加载失败，使用默认设置"
+    CURRENT_CURVE_SIMPLE="secp256k1"
+}
 
 echo "可用的曲线:"
 for curve_file in "$SCRIPT_DIR/core/curves/"*params.sh; do
@@ -122,15 +125,15 @@ echo
 echo "5. 测试ECDSA模块"
 echo "================="
 
-if [[ -f "$SCRIPT_DIR/core/crypto/ecdsa_fixed_test.sh" ]]; then
+if [[ -f "${SCRIPT_DIR}/core/crypto/ecdsa_fixed_test.sh" ]]; then
     echo "运行ECDSA固定测试..."
-    if "$SCRIPT_DIR/core/crypto/ecdsa_fixed_test.sh" >/dev/null 2>&1; then
+    if "${SCRIPT_DIR}/core/crypto/ecdsa_fixed_test.sh" >/dev/null 2>&1; then
         echo "✅ ECDSA测试通过"
     else
         echo "❌ ECDSA测试失败"
     fi
 else
-    echo "ECDSA测试文件不存在"
+    echo "ECDSA测试文件不存在，跳过详细测试"
 fi
 
 echo

@@ -5,7 +5,15 @@ echo "🔍 bECCsh 纯Bash十六进制转换最终测试"
 echo "======================================"
 
 # 加载修复的十六进制库
-source fixed_pure_bash_hex.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${SCRIPT_DIR}/../../tools/fixed_pure_bash_hex.sh" ]]; then
+    source "${SCRIPT_DIR}/../../tools/fixed_pure_bash_hex.sh"
+elif [[ -f "fixed_pure_bash_hex.sh" ]]; then
+    source "fixed_pure_bash_hex.sh"
+else
+    echo "错误: 无法加载十六进制库" >&2
+    exit 1
+fi
 
 echo ""
 echo "核心功能验证:"

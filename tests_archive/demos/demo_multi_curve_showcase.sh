@@ -46,7 +46,7 @@ show_supported_curves() {
     echo ""
     
     # 使用主程序显示曲线信息
-    "$SCRIPT_DIR/becc_multi_curve.sh" curves
+    "$SCRIPT_DIR/../../becc_multi_curve.sh" curves
     
     echo ""
     echo -e "${GREEN}✓ 总共支持 9 种标准椭圆曲线算法${NC}"
@@ -64,7 +64,7 @@ show_curve_recommendations() {
     local security_levels=("96" "112" "128" "192" "256")
     for level in "${security_levels[@]}"; do
         echo -n "  ${level}位安全级别: "
-        "$SCRIPT_DIR/becc_multi_curve.sh" recommend --security "$level" 2>/dev/null | grep "推荐曲线:" | cut -d: -f2 | tr -d ' '
+        "$SCRIPT_DIR/../../becc_multi_curve.sh" recommend --security "$level" 2>/dev/null | grep "推荐曲线:" | cut -d: -f2 | tr -d ' '
     done
     
     echo ""
@@ -74,7 +74,7 @@ show_curve_recommendations() {
     local use_cases=("mobile" "bitcoin" "web" "government" "long-term")
     for use_case in "${use_cases[@]}"; do
         echo -n "  $use_case 用例: "
-        "$SCRIPT_DIR/becc_multi_curve.sh" recommend --use-case "$use_case" 2>/dev/null | grep "推荐曲线:" | cut -d: -f2 | tr -d ' '
+        "$SCRIPT_DIR/../../becc_multi_curve.sh" recommend --use-case "$use_case" 2>/dev/null | grep "推荐曲线:" | cut -d: -f2 | tr -d ' '
     done
     
     echo ""
@@ -97,7 +97,7 @@ show_key_generation() {
         local pub_file="/tmp/demo_${curve}_key_public.pem"
         
         # 生成密钥对
-        if "$SCRIPT_DIR/becc_multi_curve.sh" keygen -c "$curve" -f "$key_file" -q 2>/dev/null; then
+        if "$SCRIPT_DIR/../../becc_multi_curve.sh" keygen -c "$curve" -f "$key_file" -q 2>/dev/null; then
             echo -e "  ${GREEN}✓${NC} 私钥文件: $key_file"
             echo -e "  ${GREEN}✓${NC} 公钥文件: $pub_file"
             
@@ -136,7 +136,7 @@ show_sign_verify() {
     
     # 生成密钥对
     echo -n "1. 生成密钥对... "
-    if "$SCRIPT_DIR/becc_multi_curve.sh" keygen -c "$curve" -f "$key_file" -q 2>/dev/null; then
+    if "$SCRIPT_DIR/../../becc_multi_curve.sh" keygen -c "$curve" -f "$key_file" -q 2>/dev/null; then
         echo -e "${GREEN}✓${NC}"
     else
         echo -e "${RED}✗${NC}"
@@ -146,7 +146,7 @@ show_sign_verify() {
     # 签名消息
     echo -n "2. 签名消息... "
     echo -n "$message" > "/tmp/demo_message.txt"
-    if "$SCRIPT_DIR/becc_multi_curve.sh" sign -c "$curve" -k "$key_file" -m "$message" -f "$sig_file" -q 2>/dev/null; then
+    if "$SCRIPT_DIR/../../becc_multi_curve.sh" sign -c "$curve" -k "$key_file" -m "$message" -f "$sig_file" -q 2>/dev/null; then
         echo -e "${GREEN}✓${NC}"
         
         # 显示签名大小
@@ -163,7 +163,7 @@ show_sign_verify() {
     # 验证签名
     echo -n "3. 验证签名... "
     local verify_result
-    verify_result=$("$SCRIPT_DIR/becc_multi_curve.sh" verify -c "$curve" -k "$pub_file" -m "$message" -s "$sig_file" 2>&1)
+    verify_result=$("$SCRIPT_DIR/../../becc_multi_curve.sh" verify -c "$curve" -k "$pub_file" -m "$message" -s "$sig_file" 2>&1)
     
     if echo "$verify_result" | grep -q "VALID"; then
         echo -e "${GREEN}✓ 验证成功${NC}"
@@ -197,7 +197,7 @@ show_curve_aliases() {
         echo -n "使用别名 '$alias' (对应 $curve): "
         
         local key_file="/tmp/demo_alias_${alias}.pem"
-        if "$SCRIPT_DIR/becc_multi_curve.sh" keygen -c "$alias" -f "$key_file" -q 2>/dev/null; then
+        if "$SCRIPT_DIR/../../becc_multi_curve.sh" keygen -c "$alias" -f "$key_file" -q 2>/dev/null; then
             echo -e "${GREEN}✓${NC}"
             rm -f "$key_file" "${key_file%.pem}_public.pem"
         else
@@ -229,7 +229,7 @@ show_performance_comparison() {
         
         # 进行简单测试：生成密钥对
         for ((i=1; i<=10; i++)); do
-            "$SCRIPT_DIR/becc_multi_curve.sh" keygen -c "$curve" -f "/tmp/perf_${curve}_${i}.pem" -q 2>/dev/null
+            "$SCRIPT_DIR/../../becc_multi_curve.sh" keygen -c "$curve" -f "/tmp/perf_${curve}_${i}.pem" -q 2>/dev/null
             rm -f "/tmp/perf_${curve}_${i}.pem" "/tmp/perf_${curve}_${i}_public.pem"
         done
         
@@ -284,7 +284,7 @@ show_advanced_features() {
         local key_file="/tmp/batch_${curve}.pem"
         echo -n "  $curve... "
         
-        if "$SCRIPT_DIR/becc_multi_curve.sh" keygen -c "$curve" -f "$key_file" -q 2>/dev/null; then
+        if "$SCRIPT_DIR/../../becc_multi_curve.sh" keygen -c "$curve" -f "$key_file" -q 2>/dev/null; then
             echo -e "${GREEN}✓${NC}"
             rm -f "$key_file" "${key_file%.pem}_public.pem"
         else

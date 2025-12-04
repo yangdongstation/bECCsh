@@ -21,7 +21,11 @@ echo "🔍 快速十六进制转换验证测试"
 echo "=============================="
 
 # 加载修复的十六进制库
-if [[ -f "fixed_pure_bash_hex.sh" ]]; then
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${SCRIPT_DIR}/../../tools/fixed_pure_bash_hex.sh" ]]; then
+    source "${SCRIPT_DIR}/../../tools/fixed_pure_bash_hex.sh"
+    print_success "加载修复的纯Bash十六进制库"
+elif [[ -f "fixed_pure_bash_hex.sh" ]]; then
     source "fixed_pure_bash_hex.sh"
     print_success "加载修复的纯Bash十六进制库"
 else

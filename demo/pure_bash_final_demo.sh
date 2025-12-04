@@ -20,9 +20,9 @@ SCRIPT_DIR="${BASH_SOURCE%/*}"
 
 # 尝试加载基础模块
 echo "🔄 加载纯Bash基础模块..."
-if source "$SCRIPT_DIR/pure_bash_encoding_final.sh" 2>/dev/null; then
+if source "$SCRIPT_DIR/../core/lib/pure_bash/pure_bash_encoding_final.sh" 2>/dev/null; then
     echo "✅ 基础模块加载成功"
-elif source "$(dirname "$0")/pure_bash_encoding_final.sh" 2>/dev/null; then
+elif source "$(dirname "$0")/../core/lib/pure_bash/pure_bash_encoding_final.sh" 2>/dev/null; then
     echo "✅ 基础模块加载成功（相对路径）"
 else
     echo "❌ 无法加载基础模块"
@@ -211,6 +211,7 @@ echo "感受Bash语言的极限编程能力！"
 echo "探索零依赖编程的无限可能！"
 echo "为开源社区贡献独特的技术价值！"
 echo
+
 echo "🏆 bECCsh: 纯Bash密码学的世界首创，教育研究的完美工具！"
 echo
 echo "✅ 项目已圆满完成，感谢体验！🎉"

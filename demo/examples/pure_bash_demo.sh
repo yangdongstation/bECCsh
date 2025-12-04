@@ -1,7 +1,11 @@
 #!/bin/bash
 # 纯Bash示例演示
 
-source ../lib/pure_bash/pure_bash_crypto.sh
+# 获取脚本目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# 导入纯Bash密码学库
+source "${SCRIPT_DIR}/../../core/lib/pure_bash/pure_bash_crypto.sh"
 
 echo "🎯 纯Bash密码学演示"
 echo "===================="

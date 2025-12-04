@@ -10,7 +10,7 @@ echo "OpenSSL版本: $(openssl version 2>/dev/null || echo 'OpenSSL未安装')"
 echo "系统信息: $(uname -a)"
 echo
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "1. 基础兼容性测试"
 echo "=================="

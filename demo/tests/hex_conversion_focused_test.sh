@@ -49,7 +49,11 @@ test_pure_bash_hex_core() {
     print_header "纯Bash十六进制转换核心功能测试"
     
     # 加载修复的纯Bash十六进制库
-    if [[ -f "fixed_pure_bash_hex.sh" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [[ -f "${SCRIPT_DIR}/../../tools/fixed_pure_bash_hex.sh" ]]; then
+        source "${SCRIPT_DIR}/../../tools/fixed_pure_bash_hex.sh"
+        print_success "修复的纯Bash十六进制库加载成功"
+    elif [[ -f "fixed_pure_bash_hex.sh" ]]; then
         source "fixed_pure_bash_hex.sh"
         print_success "修复的纯Bash十六进制库加载成功"
     else

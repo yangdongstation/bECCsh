@@ -8,7 +8,7 @@ echo "========================"
 echo "测试时间: $(date)"
 echo
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SUCCESS_COUNT=0
 TOTAL_COUNT=0
 
@@ -45,7 +45,7 @@ run_test "模运算" \
 
 run_test "模逆元" \
     "bash $SCRIPT_DIR/core/crypto/ec_math_fixed_simple.sh" \
-    "修复的数学运算测试完成"
+    "修复的数学运算"
 
 # 测试2: 椭圆曲线数学
 echo "2. 椭圆曲线数学测试"
@@ -67,7 +67,7 @@ run_test "固定k值ECDSA" \
 echo "4. 曲线选择器测试"
 run_test "曲线选择器" \
     "bash $SCRIPT_DIR/core/crypto/curve_selector_simple.sh" \
-    "支持的椭圆曲线"
+    "支持的曲线"
 
 # 测试5: 核心功能
 echo "5. 核心功能测试"

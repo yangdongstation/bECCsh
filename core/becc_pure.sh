@@ -9,7 +9,8 @@ set -euo pipefail
 export PURE_BASH_IMPLEMENTATION=true
 
 # 设置库路径
-LIB_DIR="${BASH_SOURCE%/*}/lib/pure_bash"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="${SCRIPT_DIR}/lib/pure_bash"
 
 # 引入纯Bash模块
 source "$LIB_DIR/pure_bash_loader.sh"

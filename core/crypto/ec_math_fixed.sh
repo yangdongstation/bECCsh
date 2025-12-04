@@ -4,6 +4,11 @@
 
 set -euo pipefail
 
+# 脚本目录 (避免重复定义)
+if [[ -z "${SCRIPT_DIR:-}" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
+
 # 大数模运算 - 修复版本
 bigint_mod() {
     local num="$1"
@@ -271,11 +276,11 @@ ecdsa_sign_simple() {
     local params
     case "$curve_name" in
         "secp256k1")
-            source "${SCRIPT_DIR}/core/curves/secp256k1_params.sh" 2>/dev/null || return 1
+            source "${SCRIPT_DIR}/../curves/secp256k1_params.sh" 2>/dev/null || return 1
             params=$(get_secp256k1_params)
             ;;
         "secp256r1")
-            source "${SCRIPT_DIR}/core/curves/secp256r1_params.sh" 2>/dev/null || return 1
+            source "${SCRIPT_DIR}/../curves/secp256r1_params.sh" 2>/dev/null || return 1
             params=$(get_secp256r1_params)
             ;;
         *)
@@ -349,11 +354,11 @@ ecdsa_verify_simple() {
     local params
     case "$curve_name" in
         "secp256k1")
-            source "${SCRIPT_DIR}/core/curves/secp256k1_params.sh" 2>/dev/null || return 1
+            source "${SCRIPT_DIR}/../curves/secp256k1_params.sh" 2>/dev/null || return 1
             params=$(get_secp256k1_params)
             ;;
         "secp256r1")
-            source "${SCRIPT_DIR}/core/curves/secp256r1_params.sh" 2>/dev/null || return 1
+            source "${SCRIPT_DIR}/../curves/secp256r1_params.sh" 2>/dev/null || return 1
             params=$(get_secp256r1_params)
             ;;
         *)

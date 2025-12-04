@@ -9,7 +9,7 @@ CURVE_SELECTOR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly CURVES_DIR="${CURVE_SELECTOR_DIR}/../curves"
 
 # 支持的椭圆曲线列表
-SUPPORTED_CURVES=(
+CURVE_SELECTOR_SUPPORTED_CURVES=(
     "secp256k1"
     "secp256r1"
     "secp384r1"
@@ -22,43 +22,39 @@ SUPPORTED_CURVES=(
 )
 
 # 曲线别名映射
-CURVE_ALIASES=(
-    ["p-256"]="secp256r1"
-    ["prime256v1"]="secp256r1"
-    ["p-384"]="secp384r1"
-    ["prime384v1"]="secp384r1"
-    ["p-521"]="secp521r1"
-    ["prime521v1"]="secp521r1"
-    ["btc"]="secp256k1"
-    ["bitcoin"]="secp256k1"
-    ["ethereum"]="secp256k1"
-)
+declare -A CURVE_ALIASES
+declare -A CURVE_SECURITY_LEVELS
+declare -A CURVE_DESCRIPTIONS
 
-# 曲线安全级别映射
-CURVE_SECURITY_LEVELS=(
-    ["secp192k1"]="96"
-    ["secp224k1"]="112"
-    ["secp256k1"]="128"
-    ["secp256r1"]="128"
-    ["brainpoolp256r1"]="128"
-    ["secp384r1"]="192"
-    ["brainpoolp384r1"]="192"
-    ["secp521r1"]="256"
-    ["brainpoolp512r1"]="256"
-)
+CURVE_ALIASES["p-256"]="secp256r1"
+CURVE_ALIASES["prime256v1"]="secp256r1"
+CURVE_ALIASES["p-384"]="secp384r1"
+CURVE_ALIASES["prime384v1"]="secp384r1"
+CURVE_ALIASES["p-521"]="secp521r1"
+CURVE_ALIASES["prime521v1"]="secp521r1"
+CURVE_ALIASES["btc"]="secp256k1"
+CURVE_ALIASES["bitcoin"]="secp256k1"
+CURVE_ALIASES["ethereum"]="secp256k1"
 
-# 曲线用途描述
-CURVE_DESCRIPTIONS=(
-    ["secp192k1"]="轻量级应用、物联网设备、资源受限环境"
-    ["secp224k1"]="比特币早期使用、中等安全级别应用"
-    ["secp256k1"]="比特币、以太坊等加密货币标准"
-    ["secp256r1"]="TLS 1.3、JWT、政府标准、通用加密"
-    ["secp384r1"]="高安全性应用、政府加密、企业级安全"
-    ["secp521r1"]="最高安全级别、长期保密、政府顶级机密"
-    ["brainpoolp256r1"]="欧洲标准、高透明度应用"
-    ["brainpoolp384r1"]="高安全性欧洲标准应用"
-    ["brainpoolp512r1"]="最高安全级别欧洲标准应用"
-)
+CURVE_SECURITY_LEVELS["secp192k1"]="96"
+CURVE_SECURITY_LEVELS["secp224k1"]="112"
+CURVE_SECURITY_LEVELS["secp256k1"]="128"
+CURVE_SECURITY_LEVELS["secp256r1"]="128"
+CURVE_SECURITY_LEVELS["brainpoolp256r1"]="128"
+CURVE_SECURITY_LEVELS["secp384r1"]="192"
+CURVE_SECURITY_LEVELS["brainpoolp384r1"]="192"
+CURVE_SECURITY_LEVELS["secp521r1"]="256"
+CURVE_SECURITY_LEVELS["brainpoolp512r1"]="256"
+
+CURVE_DESCRIPTIONS["secp192k1"]="轻量级应用、物联网设备、资源受限环境"
+CURVE_DESCRIPTIONS["secp224k1"]="比特币早期使用、中等安全级别应用"
+CURVE_DESCRIPTIONS["secp256k1"]="比特币、以太坊等加密货币标准"
+CURVE_DESCRIPTIONS["secp256r1"]="TLS 1.3、JWT、政府标准、通用加密"
+CURVE_DESCRIPTIONS["secp384r1"]="高安全性应用、政府加密、企业级安全"
+CURVE_DESCRIPTIONS["secp521r1"]="最高安全级别、长期保密、政府顶级机密"
+CURVE_DESCRIPTIONS["brainpoolp256r1"]="欧洲标准、高透明度应用"
+CURVE_DESCRIPTIONS["brainpoolp384r1"]="高安全性欧洲标准应用"
+CURVE_DESCRIPTIONS["brainpoolp512r1"]="最高安全级别欧洲标准应用"
 
 # 标准化曲线名称
 normalize_curve_name() {
@@ -82,7 +78,7 @@ is_curve_supported() {
     local normalized_name
     normalized_name=$(normalize_curve_name "$curve_name")
     
-    for supported_curve in "${SUPPORTED_CURVES[@]}"; do
+    for supported_curve in "${CURVE_SELECTOR_SUPPORTED_CURVES[@]}"; do
         if [[ "$supported_curve" == "$normalized_name" ]]; then
             return 0
         fi
@@ -114,7 +110,7 @@ list_supported_curves() {
     echo "支持的椭圆曲线:"
     echo "=================="
     
-    for curve in "${SUPPORTED_CURVES[@]}"; do
+    for curve in "${CURVE_SELECTOR_SUPPORTED_CURVES[@]}"; do
         local security_level=$(get_curve_security_level "$curve")
         local description=$(get_curve_description "$curve")
         printf "  %-20s [安全级别: %s位] - %s\n" "$curve" "$security_level" "$description"
@@ -217,7 +213,7 @@ select_curve() {
     # 检查曲线是否受支持
     if ! is_curve_supported "$normalized_name"; then
         echo "错误: 不支持的椭圆曲线 '$curve_name'" >&2
-        echo "支持的曲线: ${SUPPORTED_CURVES[*]}" >&2
+        echo "支持的曲线: ${CURVE_SELECTOR_SUPPORTED_CURVES[*]}" >&2
         return 1
     fi
     

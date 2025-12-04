@@ -5,6 +5,10 @@ set -e
 
 echo "🔥 bECCsh - 快速测试套件"
 
+# 获取项目根目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+
 # 检查依赖
 echo "1. 检查依赖..."
 for cmd in sha256sum bc; do
@@ -18,23 +22,53 @@ echo "✓ 依赖检查通过"
 # 检查文件结构
 echo "2. 检查文件结构..."
 required_files=(
-    "lib/entropy.sh"
-    "lib/big_math.sh"
-    "lib/ec_curve.sh"
-    "lib/ec_point.sh"
-    "lib/ecdsa.sh"
+    "$PROJECT_ROOT/lib/entropy.sh"
+    "$PROJECT_ROOT/beccsh/lib/big_math.sh"
+    "$PROJECT_ROOT/lib/ec_curve.sh"
+    "$PROJECT_ROOT/lib/ec_point.sh"
+    "$PROJECT_ROOT/lib/ecdsa.sh"
 )
+
+all_files_found=true
 for file in "${required_files[@]}"; do
     if [ ! -f "$file" ]; then
         echo "✗ 缺少文件: $file"
-        exit 1
+        all_files_found=false
     fi
 done
+
+if [ "$all_files_found" = false ]; then
+    echo "尝试备用路径..."
+    # 尝试其他可能的路径
+    required_files=(
+        "lib/entropy.sh"
+        "beccsh/lib/big_math.sh"
+        "lib/ec_curve.sh"
+        "lib/ec_point.sh"
+        "lib/ecdsa.sh"
+    )
+    
+    for file in "${required_files[@]}"; do
+        if [ ! -f "$PROJECT_ROOT/$file" ]; then
+            echo "✗ 仍然缺少文件: $PROJECT_ROOT/$file"
+            exit 1
+        fi
+    done
+fi
+
 echo "✓ 文件结构检查通过"
 
 # 测试大数运算
 echo "3. 测试大数运算..."
-source lib/big_math.sh
+# 尝试多个可能的路径
+if [ -f "$PROJECT_ROOT/beccsh/lib/big_math.sh" ]; then
+    source "$PROJECT_ROOT/beccsh/lib/big_math.sh"
+elif [ -f "$PROJECT_ROOT/lib/big_math.sh" ]; then
+    source "$PROJECT_ROOT/lib/big_math.sh"
+else
+    echo "✗ 无法找到 big_math.sh"
+    exit 1
+fi
 
 # 简单测试
 result=$(bn_mod_add "5" "3" "17")
@@ -56,7 +90,14 @@ echo "✓ 基础密码学测试通过"
 
 # 测试熵收集（快速模式）
 echo "4. 测试熵收集（5秒）..."
-source lib/entropy.sh
+if [ -f "$PROJECT_ROOT/lib/entropy.sh" ]; then
+    source "$PROJECT_ROOT/lib/entropy.sh"
+elif [ -f "$PROJECT_ROOT/beccsh/lib/entropy.sh" ]; then
+    source "$PROJECT_ROOT/beccsh/lib/entropy.sh"
+else
+    echo "✗ 无法找到 entropy.sh"
+    exit 1
+fi
 BECCSH_QUICK_ENTROPY=1  # 快速模式
 if entropy=$(collect_entropy); then
     echo "✓ 熵收集成功（k值长度: ${#entropy}位十进制）"
@@ -79,6 +120,7 @@ EOF
 read -r -n 1 -t 10 response
 if [[ "$response" =~ ^[Yy]$ ]]; then
     echo "运行中..."
+    cd "$PROJECT_ROOT"
     ./becc.sh genkey
     echo "测试数据" > test.txt
     ./becc.sh sign test.txt

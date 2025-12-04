@@ -9,7 +9,7 @@ CURVE_SELECTOR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CURVES_DIR="${CURVE_SELECTOR_DIR}/../curves"
 
 # 支持的椭圆曲线列表
-SUPPORTED_CURVES=(
+SIMPLE_SUPPORTED_CURVES=(
     "secp256k1"
     "secp256r1"
     "secp384r1"
@@ -56,7 +56,7 @@ is_curve_supported() {
     local normalized_name
     normalized_name=$(normalize_curve_name "$curve_name")
     
-    for supported_curve in "${SUPPORTED_CURVES[@]}"; do
+    for supported_curve in "${SIMPLE_SUPPORTED_CURVES[@]}"; do
         if [[ "$supported_curve" == "$normalized_name" ]]; then
             return 0
         fi
@@ -166,7 +166,7 @@ demo_curve_selector_simple() {
     echo "======================="
     echo ""
     
-    echo "支持的曲线: ${SUPPORTED_CURVES[*]}"
+    echo "支持的曲线: ${SIMPLE_SUPPORTED_CURVES[*]}"
     echo ""
     
     # 测试几个曲线

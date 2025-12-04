@@ -103,7 +103,7 @@ if x1 == x2:
             exit(0)
         
         # λ = (3x² + a) / (2y) mod p
-        lambda = (3 * x1 * x1 + a) * pow(2 * y1, -1, p) % p
+        lam = (3 * x1 * x1 + a) * pow(2 * y1, -1, p) % p
     else:
         # P + (-P) = O
         print('0 0')
@@ -116,11 +116,11 @@ else:
         print('0 0')
         exit(0)
     
-    lambda = numerator * pow(denominator, -1, p) % p
+    lam = numerator * pow(denominator, -1, p) % p
 
 # 计算结果点
-x3 = (lambda * lambda - x1 - x2) % p
-y3 = (lambda * (x1 - x3) - y1) % p
+x3 = (lam * lam - x1 - x2) % p
+y3 = (lam * (x1 - x3) - y1) % p
 
 print(f'{x3} {y3}')
 " "$x1" "$y1" "$x2" "$y2" "$a" "$p"
@@ -167,9 +167,9 @@ while k > 0:
                         if lambda_den == 0:
                             result_x, result_y = 0, 0
                         else:
-                            lambda = (lambda_num * lambda_den) % p
-                            x3 = (lambda * lambda - 2 * result_x) % p
-                            y3 = (lambda * (result_x - x3) - result_y) % p
+                            lam = (lambda_num * lambda_den) % p
+                            x3 = (lam * lam - 2 * result_x) % p
+                            y3 = (lam * (result_x - x3) - result_y) % p
                             result_x, result_y = x3, y3
                 else:
                     result_x, result_y = 0, 0
@@ -180,9 +180,9 @@ while k > 0:
                 if denominator == 0:
                     result_x, result_y = 0, 0
                 else:
-                    lambda = (numerator * pow(denominator, -1, p)) % p
-                    x3 = (lambda * lambda - result_x - current_x) % p
-                    y3 = (lambda * (result_x - x3) - result_y) % p
+                    lam = (numerator * pow(denominator, -1, p)) % p
+                    x3 = (lam * lam - result_x - current_x) % p
+                    y3 = (lam * (result_x - x3) - result_y) % p
                     result_x, result_y = x3, y3
     
     # 倍点运算
@@ -194,9 +194,9 @@ while k > 0:
         if lambda_den == 0:
             current_x, current_y = 0, 0
         else:
-            lambda = (lambda_num * lambda_den) % p
-            x3 = (lambda * lambda - 2 * current_x) % p
-            y3 = (lambda * (current_x - x3) - current_y) % p
+            lam = (lambda_num * lambda_den) % p
+            x3 = (lam * lam - 2 * current_x) % p
+            y3 = (lam * (current_x - x3) - current_y) % p
             current_x, current_y = x3, y3
     
     k = k // 2
@@ -248,8 +248,8 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     
     # 测试基本运算
     echo "测试模运算:"
-    echo "10 mod 7 = $(mod_simple 10 7)"
-    echo "15 mod 6 = $(mod_simple 15 6)"
+    echo "10 mod 7 = $(mod_add 10 0 7)"
+    echo "15 mod 6 = $(mod_add 15 0 6)"
     
     # 测试模逆元
     echo "测试模逆元:"
@@ -258,7 +258,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     
     # 测试点加法
     echo "测试点加法:"
-    local test_result=$(ec_point_add_optimized "3" "4" "1" "2" "1" "7")
+    test_result=$(ec_point_add_optimized "3" "4" "1" "2" "1" "7")
     echo "(3,4) + (1,2) on y² = x³ + x + 1 mod 7 = $test_result"
     
     echo "==================================="
