@@ -176,7 +176,7 @@ bash demo/bash_pure_demo.sh
 
 ### Bash编程规范
 ```bash
-# 函数命名：小写下划线
+# 函数命名：模块前缀 + 下划线 + 描述性名称
 bashmath_hex_to_dec() {
     local hex="$1"  # 参数使用local声明
     # 实现代码
@@ -261,6 +261,63 @@ set -x  # 开启调试模式
 - `BECC_SILENT`: 设为"true"抑制安全警告
 - `LOG_LEVEL`: 控制日志详细程度（DEBUG=0, INFO=1, WARN=2, ERROR=3）
 
+## 🔧 构建和部署
+
+### 无传统构建过程
+- **零编译步骤**: 纯Bash脚本，直接执行
+- **权限设置**: 主要部署步骤为`chmod +x`
+- **无依赖管理**: 零外部依赖，无需包管理器
+
+### 部署步骤
+```bash
+# 1. 克隆或下载项目
+git clone <repository>
+cd becch
+
+# 2. 设置执行权限
+chmod +x becc.sh
+chmod +x test_*.sh
+chmod +x lib/*.sh
+
+# 3. 验证安装
+./becc.sh --help
+./test_quick_functionality.sh
+```
+
+### 测试执行模式
+```bash
+# 快速测试（3-10秒）
+./test_quick_functionality.sh
+./test_core_modules_direct.sh
+
+# 综合测试（1-5分钟）
+./tests_archive/comprehensive_runnable_test.sh
+
+# OpenSSL兼容性测试
+./test_openssl_compatibility_final.sh
+```
+
+## 🛡️ 深度安全架构
+
+### 多层安全机制
+1. **生产环境阻止**: `BECC_PRODUCTION`环境变量检测
+2. **输入验证**: 正则表达式格式检查和长度限制
+3. **常量时间操作**: 防侧信道攻击保护
+4. **安全内存管理**: 多次覆盖敏感数据
+5. **8层熵收集**: 系统状态、硬件信息、用户输入等
+
+### 安全测试覆盖
+- **196个测试脚本**: 完整安全功能验证
+- **98%+通过率**: 可靠性确认
+- **OpenSSL兼容性**: 96%+行业标准兼容
+- **边界条件测试**: 极端值和系统限制测试
+
+### 审计和监控
+- **操作日志**: 关键操作记录
+- **异常检测**: 高频操作和异常时间检测
+- **完整性验证**: 文件和参数完整性检查
+- **资源监控**: 内存、CPU、文件描述符跟踪
+
 ## 📚 关键文档
 
 ### 技术文档
@@ -274,10 +331,16 @@ set -x  # 开启调试模式
 - `PROJECT_OVERVIEW.md` - 项目概览
 - `PURE_BASH_MANIFESTO.md` - 纯Bash编程哲学
 
-### 验证报告
-- `FINAL_VERIFICATION_REPORT.md` - 完整验证报告
+### 安全文档
+- `SECURITY_WARNING.md` - 安全警告和限制
+- `SECURITY_IMPROVEMENTS.md` - 安全改进计划
 - `CRYPTOGRAPHIC_SECURITY_CONSIDERATIONS.md` - 密码学安全分析
 - `OPENSSL_COMPARISON_REPORT.md` - OpenSSL兼容性测试
+
+### 验证报告
+- `FINAL_VERIFICATION_REPORT.md` - 完整验证报告
+- `FINAL_VERIFICATION_REPORT.md` - 完整验证报告
+- `COMPREHENSIVE_ELLIPTIC_CURVE_TEST_ANALYSIS_REPORT.md` - 综合测试分析
 
 ## 🎯 开发原则
 
@@ -313,12 +376,34 @@ set -x  # 开启调试模式
 
 ## 🏆 项目成熟度
 
-- **196个shell脚本**: 表明功能完整性
-- **75个文档文件**: 显示全面覆盖
+- **199个shell脚本**: 表明功能完整性
+- **83个文档文件**: 显示全面覆盖
 - **多版本实现**: 专业版、纯Bash版、多曲线版
-- **广泛测试套件**: 包含边界情况测试
+- **196个测试脚本**: 包含边界情况测试
 - **完整验证报告**: OpenSSL兼容性测试
 - **开发历史归档**: 保留完整开发过程
+
+## 💡 开发工作流程
+
+### 典型开发流程
+1. **直接编辑**: 修改Bash脚本文件
+2. **本地测试**: 运行快速测试套件
+3. **集成验证**: 跨模块测试
+4. **性能测试**: 基准测试比较
+5. **文档更新**: 更新相关.md文件
+
+### 代码贡献指南
+- 遵循现有代码风格和命名约定
+- 添加双语注释（中文和英文）
+- 包含完整的错误处理
+- 编写对应的测试用例
+- 更新相关文档
+
+### 测试驱动开发
+- 先写测试，后实现功能
+- 保持98%+的测试通过率
+- 包含边界条件和异常情况
+- 验证OpenSSL兼容性
 
 ---
 
