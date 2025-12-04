@@ -34,6 +34,36 @@
             position: relative;
         }
         
+        .github-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1em;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .github-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        .github-link::before {
+            content: '🐙';
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+        
         .header::before {
             content: '';
             position: absolute;
@@ -543,6 +573,9 @@
 <body>
     <div class="container">
         <header class="header">
+            <a href="https://github.com/yangdongstation/bECCsh/" class="github-link" target="_blank" rel="noopener">
+                GitHub 项目地址
+            </a>
             <h1>bECCsh</h1>
             <div class="subtitle">纯Bash椭圆曲线密码学实现</div>
             <div class="tagline">零外部依赖的密码学奇迹 | 完全透明的算法教学</div>
@@ -562,6 +595,14 @@
                     但这个执念推动我们走向了更远的地方——我们不仅移除了bc，还移除了<strong>所有</strong>外部依赖，
                     实现了<strong>纯粹的Bash密码学</strong>。
                 </p>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://github.com/yangdongstation/bECCsh/" target="_blank" rel="noopener" 
+                       style="display: inline-flex; align-items: center; background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 1.1em; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);">
+                        <span style="margin-right: 10px;">🐙</span>
+                        查看 GitHub 项目源码
+                    </a>
+                </div>
             </section>
             
             <section class="section">
@@ -984,6 +1025,9 @@ ec_point_add() {
             <p>零外部依赖的技术奇迹 | 完全透明的算法教学</p>
             
             <div class="footer-links">
+                <a href="https://github.com/yangdongstation/bECCsh/" target="_blank" rel="noopener" style="background: linear-gradient(135deg, #667eea, #764ba2); border: none;">
+                    🐙 GitHub 项目地址
+                </a>
                 <a href="README.md">📖 项目文档</a>
                 <a href="index_cryptographic.html">🔐 密码学技术详解</a>
                 <a href="index_mathematical.html">📐 数学原理展示</a>
@@ -994,10 +1038,19 @@ ec_point_add() {
                 <a href="becc_multi_curve.sh">🔄 多曲线版本</a>
             </div>
             
-            <p style="margin-top: 25px; opacity: 0.8; font-size: 0.9em;">
-                用纯粹的执念，创造不可能的奇迹 ✨<br>
-                世界首个纯Bash椭圆曲线密码学实现
-            </p>
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <p style="margin-bottom: 15px;">
+                    <strong>🌟 项目地址：</strong>
+                    <a href="https://github.com/yangdongstation/bECCsh/" target="_blank" rel="noopener" 
+                       style="color: #a8edea; text-decoration: none; font-weight: 600;">
+                        https://github.com/yangdongstation/bECCsh/
+                    </a>
+                </p>
+                <p style="opacity: 0.8; font-size: 0.9em;">
+                    用纯粹的执念，创造不可能的奇迹 ✨<br>
+                    世界首个纯Bash椭圆曲线密码学实现
+                </p>
+            </div>
         </footer>
     </div>
     
