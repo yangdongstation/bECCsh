@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bECCsh 数学原理展示 - 椭圆曲线密码学公式详解</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Latin Modern Roman', 'Times New Roman', serif;
+            line-height: 1.8;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-size: 18px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+            font-weight: 200;
+        }
+        
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+        }
+        
+        .section {
+            padding: 50px;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .formula-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 25px 0;
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .formula-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.8s;
+        }
+        
+        .formula-box:hover::before {
+            left: 100%;
+        }
+        
+        .formula-main {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        .formula-conditions {
+            font-size: 1.1em;
+            color: #6c757d;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        
+        .derivation {
+            background: white;
+            border-left: 5px solid #667eea;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .derivation-step {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #dee2e6;
+        }
+        
+        .math-symbol {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            color: #667eea;
+            font-weight: 500;
+        }
+        
+        .algorithm-steps {
+            counter-reset: step-counter;
+        }
+        
+        .algorithm-step {
+            counter-increment: step-counter;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #ecf0f1;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            position: relative;
+            padding-left: 60px;
+        }
+        
+        .algorithm-step::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .parameter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .parameter-table th,
+        .parameter-table td {
+            padding: 18px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .parameter-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+        
+        .parameter-table tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .proof-box {
+            background: linear-gradient(135deg, #a8e6cf 0%, #dcedc8 100%);
+            border: 2px solid #388e3c;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .proof-box .proof-title {
+            color: #2e7d32;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .warning-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            border: 2px solid #e17055;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .navigation {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 60, 114, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            font-size: 0.9em;
+        }
+        
+        .navigation a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            margin: 8px 0;
+            transition: color 0.3s ease;
+        }
+        
+        .navigation a:hover {
+            color: #64b5f6;
+        }
+        
+        .highlight-formula {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 500;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        .interactive-formula {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .interactive-formula:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.2em; }
+            .section { padding: 25px; }
+            .formula-main { font-size: 1.4em; }
+            .navigation { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navigation">
+        <strong>📋 导航目录</strong>
+        <a href="#curve-equation">椭圆曲线方程</a>
+        <a href="#finite-field">有限域运算</a>
+        <a href="#point-addition">点加法</a>
+        <a href="#scalar-multiplication">标量乘法</a>
+        <a href="#ecdsa-math">ECDSA数学</a>
+        <a href="#security-proof">安全性证明</a>
+    </nav>
+
+    <div class="container">
+        <header class="header">
+            <h1>bECCsh 数学原理</h1>
+            <div class="subtitle">椭圆曲线密码学的数学美学</div>
+            <div class="tagline">从零开始理解每个公式的来龙去脉</div>
+        </header>
+        
+        <div class="main-content">
+            <section class="section" id="curve-equation">
+                <h2>📐 椭圆曲线方程</h2>
+                
+                <div class="formula-box">
+                    <div class="formula-main">
+                        y² = x³ + ax + b
+                    </div>
+                    <div class="formula-conditions">
+                        其中 4a³ + 27b² ≠ 0 （确保曲线非奇异）
+                    </div>
+                </div>
+                
+                <div class="derivation">
+                    <h3>几何意义</h3>
+                    <div class="derivation-step">
+                        <strong>三次曲线：</strong>椭圆曲线是三次平面代数曲线，其上的点具有特殊的代数结构。
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>非奇异条件：</strong>判别式 Δ = -16(4a³ + 27b²) ≠ 0 确保曲线没有奇点（尖点或自交点）。
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>对称性：</strong>曲线关于x轴对称，即如果点 <span class="math-symbol">(x, y)</span> 在曲线上，则点 <span class="math-symbol">(x, -y)</span> 也在曲线上。
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-main">
+                        y² ≡ x³ + ax + b (mod p)
+                    </div>
+                    <div class="formula-conditions">
+                        有限域 GF(p) 上的椭圆曲线，p 为大素数
+                    </div>
+                </div>
+                
+                <div class="derivation">
+                    <h3>有限域上的椭圆曲线</h3>
+                    <div class="derivation-step">
+                        <strong>模运算：</strong>所有运算都在模 p 下进行，形成一个有限的点集。
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>离散化：</strong>将连续的椭圆曲线离散化，适合计算机运算和密码学应用。
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>群结构：</strong>曲线上的点（包括无穷远点 O）构成一个有限阿贝尔群。
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section" id="finite-field">
+                <h2>🔢 有限域运算</h2>
+                
+                <div class="highlight-formula">
+                    有限域 GF(p) = {0, 1, 2, ..., p-1}，其中 p 是素数
+                </div>
+                
+                <h3>基本运算定义</h3>
+                <div class="parameter-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>运算</th>
+                                <th>定义</th>
+                                <th>性质</th>
+                                <th>实现复杂度</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>加法</td>
+                                <td>(a + b) mod p</td>
+                                <td>封闭性、结合律、交换律</td>
+                                <td>简单</td>
+                            </tr>
+                            <tr>
+                                <td>减法</td>
+                                <td>(a - b + p) mod p</td>
+                                <td>确保结果为正</td>
+                                <td>简单</td>
+                            </tr>
+                            <tr>
+                                <td>乘法</td>
+                                <td>(a × b) mod p</td>
+                                <td>封闭性、结合律、交换律</td>
+                                <td>中等</td>
+                            </tr>
+                            <tr>
+                                <td>除法（逆元）</td>
+                                <td>a × b⁻¹ mod p</td>
+                                <td>b⁻¹ 满足 b × b⁻¹ ≡ 1 (mod p)</td>
+                                <td>复杂</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>模逆元计算</h3>
+                <div class="formula-box">
+                    <div class="formula-main">
+                        a × a⁻¹ ≡ 1 (mod p)
+                    </div>
+                    <div class="formula-conditions">
+                        a⁻¹ 称为 a 在模 p 下的乘法逆元，仅当 gcd(a, p) = 1 时存在
+                    </div>
+                </div>
+                
+                <div class="derivation">
+                    <h3>扩展欧几里得算法</h3>
+                    <div class="derivation-step">
+                        <strong>目标：</strong>找到整数 x 和 y，使得 ax + py = gcd(a, p) = 1
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>推导：</strong>ax ≡ 1 (mod p)，因此 x ≡ a⁻¹ (mod p)
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>算法复杂度：</strong>O(log p)，适合大素数模运算
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section" id="point-addition">
+                <h2>➕ 椭圆曲线点加法</h2>
+                
+                <h3>几何解释</h3>
+                <div class="derivation">
+                    <div class="derivation-step">
+                        <strong>弦切线法则：</strong>在椭圆曲线上，通过两点 P 和 Q 画直线，与曲线相交于第三点 R'，则 P + Q = -R'（关于x轴的对称点）。
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>特殊情况：</strong>当 P = Q 时，使用切线代替弦线。
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>无穷远点：</strong>垂直线与曲线相交于无穷远点 O，它是群的单位元。
+                    </div>
+                </div>
+
+                <h3>代数公式</h3>
+                <div class="algorithm-steps">
+                    <div class="algorithm-step">
+                        <strong>输入：</strong>两点 P(x₁, y₁) 和 Q(x₂, y₂)，曲线参数 a, p
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>特殊情况处理：</strong>
+                        <ul>
+                            <li>若 P = O，返回 Q</li>
+                            <li>若 Q = O，返回 P</li>
+                            <li>若 x₁ = x₂ 且 y₁ = -y₂ mod p，返回 O</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>计算斜率 λ：</strong>
+                        <div class="formula-box">
+                            <div class="formula-main">
+                                如果 P ≠ Q: λ = (y₂ - y₁) × (x₂ - x₁)⁻¹ mod p
+                            </div>
+                            <div class="formula-main">
+                                如果 P = Q: λ = (3x₁² + a) × (2y₁)⁻¹ mod p
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>计算结果点 R(x₃, y₃)：</strong>
+                        <div class="formula-box">
+                            <div class="formula-main">
+                                x₃ = λ² - x₁ - x₂ mod p
+                            </div>
+                            <div class="formula-main">
+                                y₃ = λ(x₁ - x₃) - y₁ mod p
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="proof-box">
+                    <div class="proof-title">📐 正确性证明</div>
+                    <div class="derivation-step">
+                        设通过点 P 和 Q 的直线方程为：y = λx + μ
+                    </div>
+                    <div class="derivation-step">
+                        代入椭圆曲线方程： (λx + μ)² = x³ + ax + b
+                    </div>
+                    <div class="derivation-step">
+                        展开得： x³ - λ²x² + (a - 2λμ)x + (b - μ²) = 0
+                    </div>
+                    <div class="derivation-step">
+                        已知两个根 x₁, x₂，根据韦达定理：x₁ + x₂ + x₃ = λ²
+                    </div>
+                    <div class="derivation-step">
+                        因此：x₃ = λ² - x₁ - x₂，y₃ = λx₃ + μ = λ(x₃ - x₁) + y₁
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section" id="scalar-multiplication">
+                <h2>✖️ 标量乘法</h2>
+                
+                <div class="highlight-formula">
+                    k × P = P + P + ... + P （k 次相加）
+                </div>
+                
+                <h3>双倍加法算法 (Double-and-Add)</h3>
+                <div class="algorithm-steps">
+                    <div class="algorithm-step">
+                        <strong>输入：</strong>标量 k，点 P，曲线参数
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>初始化：</strong>结果 = O（无穷远点），当前 = P
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>循环处理：</strong>当 k > 0 时
+                        <ul>
+                            <li>如果 k mod 2 = 1，则 结果 = 结果 + 当前</li>
+                            <li>当前 = 当前 + 当前（倍点运算）</li>
+                            <li>k = k // 2（右移一位）</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>返回结果</strong>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-main">
+                        时间复杂度：O(log k) 次点加法
+                    </div>
+                    <div class="formula-conditions">
+                        空间复杂度：O(1)，仅需要常数空间
+                    </div>
+                </div>
+
+                <h3>示例计算</h3>
+                <div class="derivation">
+                    <div class="derivation-step">
+                        <strong>计算 13 × P：</strong>
+                    </div>
+                    <div class="derivation-step">
+                        13 = 1101₂（二进制表示）
+                    </div>
+                    <div class="derivation-step">
+                        13 × P = (2³ + 2² + 2⁰) × P = 8P + 4P + P
+                    </div>
+                    <div class="derivation-step">
+                        通过双倍加法算法，仅需 5 次点加法（而不是 12 次）
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section" id="ecdsa-math">
+                <h2>🖋️ ECDSA 数学基础</h2>
+                
+                <h3>域参数</h3>
+                <div class="parameter-table">
+                    <table>
+                        <tr><th>参数</th><th>符号</th><th>含义</th></tr>
+                        <tr><td>素数模数</td><td>p</td><td>定义有限域 GF(p)</td></tr>
+                        <tr><td>曲线系数</td><td>a, b</td><td>椭圆曲线方程参数</td></tr>
+                        <tr><td>基点</td><td>G = (Gₓ, Gᵧ)</td><td>生成元，群的生成元</td></tr>
+                        <tr><td>阶</td><td>n</td><td>基点 G 的阶（子群的大小）</td></tr>
+                        <tr><td>余因子</td><td>h</td><td>#E(GF(p)) / n</td></tr>
+                    </table>
+                </div>
+
+                <h3>密钥生成</h3>
+                <div class="formula-box">
+                    <div class="formula-main">
+                        私钥：d ∈ [1, n-1]（随机选择）
+                    </div>
+                    <div class="formula-main">
+                        公钥：Q = d × G（椭圆曲线标量乘法）
+                    </div>
+                </div>
+
+                <h3>签名生成数学过程</h3>
+                <div class="algorithm-steps">
+                    <div class="algorithm-step">
+                        <strong>1.</strong> 计算消息哈希：e = HASH(m)
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>2.</strong> 生成随机数：k ∈ [1, n-1]
+                        <div class="derivation-step">
+                            使用 RFC 6979 确定性生成：k = HMAC(d, e)
+                        </div>
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>3.</strong> 计算椭圆曲线点：(x₁, y₁) = k × G
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>4.</strong> 计算 r = x₁ mod n
+                        <div class="warning-box">
+                            如果 r = 0，必须重新生成 k（安全性要求）
+                        </div>
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>5.</strong> 计算 s = k⁻¹(e + d × r) mod n
+                        <div class="warning-box">
+                            如果 s = 0，必须重新生成 k（安全性要求）
+                        </div>
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>6.</strong> 签名结果为 (r, s)
+                    </div>
+                </div>
+
+                <h3>签名验证数学过程</h3>
+                <div class="algorithm-steps">
+                    <div class="algorithm-step">
+                        <strong>1.</strong> 验证范围：1 ≤ r, s ≤ n-1
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>2.</strong> 计算消息哈希：e = HASH(m)
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>3.</strong> 计算中间值：
+                        <div class="formula-box">
+                            <div class="formula-main">u₁ = e × s⁻¹ mod n</div>
+                            <div class="formula-main">u₂ = r × s⁻¹ mod n</div>
+                        </div>
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>4.</strong> 计算椭圆曲线点：(x₁, y₁) = u₁ × G + u₂ × Q
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>5.</strong> 计算 v = x₁ mod n
+                    </div>
+                    
+                    <div class="algorithm-step">
+                        <strong>6.</strong> 验证：签名有效 ⇔ v = r
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section" id="security-proof">
+                <h2>🔒 安全性数学证明</h2>
+                
+                <h3>正确性证明</h3>
+                <div class="proof-box">
+                    <div class="proof-title">ECDSA 验证正确性证明</div>
+                    
+                    <div class="derivation-step">
+                        <strong>已知签名方程：</strong>
+                        <div class="formula-main">s = k⁻¹(e + d × r) mod n</div>
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>重新排列：</strong>
+                        <div class="formula-main">k × s ≡ e + d × r (mod n)</div>
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>两边乘以 s⁻¹：</strong>
+                        <div class="formula-main">k ≡ s⁻¹(e + d × r) (mod n)</div>
+                        <div class="formula-main">k ≡ e × s⁻¹ + d × r × s⁻¹ (mod n)</div>
+                        <div class="formula-main">k ≡ u₁ + d × u₂ (mod n)</div>
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>椭圆曲线点运算：</strong>
+                        <div class="formula-main">k × G = (u₁ + d × u₂) × G</div>
+                        <div class="formula-main">= u₁ × G + u₂ × (d × G)</div>
+                        <div class="formula-main">= u₁ × G + u₂ × Q</div>
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>结论：</strong>如果签名正确生成，则 k × G = u₁ × G + u₂ × Q，因此 x 坐标相同，验证通过。
+                    </div>
+                </div>
+
+                <h3>安全性基础</h3>
+                <div class="parameter-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>安全假设</th>
+                                <th>数学问题</th>
+                                <th>复杂度</th>
+                                <th>实际安全性</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>椭圆曲线离散对数问题 (ECDLP)</td>
+                                <td>给定 P 和 Q = d×P，求 d</td>
+                                <td>O(√n)</td>
+                                <td>约 2¹²⁸ 次运算（对于256位曲线）</td>
+                            </tr>
+                            <tr>
+                                <td>椭圆曲线计算Diffie-Hellman (ECCDH)</td>
+                                <td>给定 P, aP, bP，求 abP</td>
+                                <td>与ECDLP等价</td>
+                                <td>同样困难</td>
+                            </tr>
+                            <tr>
+                                <td>单向性</td>
+                                <td>公钥计算容易，私钥推导困难</td>
+                                <td>指数级差距</td>
+                                <td>计算上不可行</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>参数选择的安全性</h3>
+                <div class="warning-box">
+                    <strong>⚠️ 弱曲线特征：</strong>
+                    <ul>
+                        <li>小因子群（#E(GF(p)) 有小素因子）</li>
+                        <li>异常曲线（#E(GF(p)) = p）</li>
+                        <li>超奇异曲线（#E(GF(p)) ≡ 1 (mod p)）</li>
+                        <li>嵌入度小的曲线</li>
+                    </ul>
+                    <br>
+                    <strong>✅ 安全曲线特征：</strong>
+                    <ul>
+                        <li>大素数阶子群（n > 2¹⁶⁰）</li>
+                        <li>余因子小（h ≤ 4）</li>
+                        <li>嵌入度大（> 100）</li>
+                        <li>可验证随机参数生成</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+        
+        <footer style="text-align: center; padding: 50px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; margin-top: 30px; border-radius: 20px;">
+            <h3>bECCsh - 纯Bash椭圆曲线密码学</h3>
+            <p>用数学的纯粹性，展现密码学的优雅</p>
+            <p style="margin-top: 20px; font-style: italic; opacity: 0.8;">
+                "数学是密码学的基础，理解数学才能真正理解安全"<br>
+                "每一个公式都承载着安全的重量，每一个证明都守护着信任的基石"
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // 公式交互效果
+        document.querySelectorAll('.interactive-formula').forEach(formula => {
+            formula.addEventListener('click', function() {
+                this.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1.02)';
+                }, 200);
+            });
+        });
+        
+        // 滚动动画
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+        
+        document.querySelectorAll('.section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(30px)';
+            section.style.transition = 'all 0.6s ease';
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>

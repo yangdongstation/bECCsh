@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bECCsh 密码学技术展示 - 椭圆曲线算法详解</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #fff, #64b5f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header .subtitle {
+            font-size: 1.6em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        
+        .header .tagline {
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+        
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        .section {
+            padding: 40px;
+            border-bottom: 1px solid rgba(30, 60, 114, 0.1);
+        }
+        
+        .section h2 {
+            color: #1e3c72;
+            font-size: 2.2em;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section h2::before {
+            content: '';
+            width: 6px;
+            height: 35px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            margin-right: 20px;
+            border-radius: 3px;
+        }
+        
+        .math-derivation {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 5px solid #1e3c72;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 10px;
+            font-family: 'Times New Roman', serif;
+        }
+        
+        .math-derivation .formula {
+            font-size: 1.2em;
+            margin: 10px 0;
+            text-align: center;
+            color: #2d3748;
+        }
+        
+        .math-derivation .derivation-step {
+            margin: 15px 0;
+            padding-left: 20px;
+            border-left: 2px solid #dee2e6;
+        }
+        
+        .algorithm-box {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: #e2e8f0;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        
+        .parameter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .parameter-table th,
+        .parameter-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .parameter-table th {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .crypto-formula {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            font-size: 1.1em;
+        }
+        
+        .step-by-step {
+            counter-reset: step-counter;
+        }
+        
+        .step {
+            counter-increment: step-counter;
+            background: white;
+            border-left: 4px solid #1e3c72;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .step::before {
+            content: counter(step-counter);
+            background: #1e3c72;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #1e3c72;
+        }
+        
+        .warning-box {
+            background: linear-gradient(120deg, #ffeaa7 0%, #fab1a0 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #e17055;
+        }
+        
+        .success-box {
+            background: linear-gradient(120deg, #a8e6cf 0%, #dcedc8 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #388e3c;
+        }
+        
+        .navigation {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 60, 114, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+        
+        .navigation a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            margin: 5px 0;
+            font-size: 0.9em;
+            transition: color 0.3s ease;
+        }
+        
+        .navigation a:hover {
+            color: #64b5f6;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5em; }
+            .section { padding: 20px; }
+            .navigation { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navigation">
+        <strong>快速导航</strong>
+        <a href="#elliptic-curve-math">椭圆曲线数学</a>
+        <a href="#ecdsa-algorithm">ECDSA算法</a>
+        <a href="#bash-implementation">Bash实现</a>
+        <a href="#curve-parameters">曲线参数</a>
+        <a href="#security-features">安全特性</a>
+        <a href="#demo">运行演示</a>
+    </nav>
+
+    <div class="container">
+        <header class="header">
+            <h1>bECCsh 密码学技术</h1>
+            <div class="subtitle">椭圆曲线密码学算法详解与纯Bash实现</div>
+            <div class="tagline">从零开始理解密码学本质 | 完全透明的算法实现</div>
+        </header>
+        
+        <div class="main-content">
+            <section class="section" id="elliptic-curve-math">
+                <h2>📐 椭圆曲线数学基础</h2>
+                
+                <h3>1.1 椭圆曲线定义</h3>
+                <div class="math-derivation">
+                    <div class="formula">
+                        <strong>标准魏尔斯特拉斯方程：</strong><br>
+                        y² ≡ x³ + ax + b (mod p)
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>参数说明：</strong>
+                        <ul>
+                            <li><strong>p</strong>：大素数模数，定义有限域 GF(p)</li>
+                            <li><strong>a, b</strong>：曲线系数，满足 4a³ + 27b² ≠ 0 (mod p)</li>
+                            <li><strong>O</strong>：无穷远点，群的单位元</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>几何意义：</strong>
+                        椭圆曲线是三次平面曲线，其上的点构成阿贝尔群，这个群的性质使得它非常适合密码学应用。
+                    </div>
+                </div>
+
+                <h3>1.2 有限域运算</h3>
+                <div class="parameter-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>运算类型</th>
+                                <th>数学定义</th>
+                                <th>Bash实现</th>
+                                <th>复杂性</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>模加法</td>
+                                <td>(a + b) mod p</td>
+                                <td>$(( (a + b) % p ))</td>
+                                <td>简单</td>
+                            </tr>
+                            <tr>
+                                <td>模乘法</td>
+                                <td>(a × b) mod p</td>
+                                <td>需要大数支持</td>
+                                <td>中等</td>
+                            </tr>
+                            <tr>
+                                <td>模逆元</td>
+                                <td>a⁻¹ mod p</td>
+                                <td>扩展欧几里得算法</td>
+                                <td>复杂</td>
+                            </tr>
+                            <tr>
+                                <td>模幂运算</td>
+                                <td>aᵇ mod p</td>
+                                <td>平方乘算法</td>
+                                <td>复杂</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>1.3 椭圆曲线群运算</h3>
+                
+                <h4>点加法算法</h4>
+                <div class="step-by-step">
+                    <div class="step">
+                        <strong>输入：</strong>两点 P(x₁, y₁) 和 Q(x₂, y₂)，曲线参数 a, p
+                    </div>
+                    
+                    <div class="step">
+                        <strong>特殊情况处理：</strong>
+                        <ul>
+                            <li>若 P = O，返回 Q</li>
+                            <li>若 Q = O，返回 P</li>
+                            <li>若 x₁ = x₂ 且 y₁ = -y₂ mod p，返回 O</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>计算斜率 λ：</strong>
+                        <div class="crypto-formula">
+                            如果 P ≠ Q: λ = (y₂ - y₁) × (x₂ - x₁)⁻¹ mod p<br>
+                            如果 P = Q: λ = (3x₁² + a) × (2y₁)⁻¹ mod p
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>计算结果点 R(x₃, y₃)：</strong>
+                        <div class="crypto-formula">
+                            x₃ = λ² - x₁ - x₂ mod p<br>
+                            y₃ = λ(x₁ - x₃) - y₁ mod p
+                        </div>
+                    </div>
+                </div>
+
+                <h4>标量乘法算法</h4>
+                <div class="algorithm-box">
+# 双倍加法算法 (Double-and-Add)
+function scalar_multiply(k, P):
+    result = O  # 无穷远点
+    current = P
+    
+    while k > 0:
+        if k mod 2 == 1:
+            result = point_add(result, current)
+        current = point_add(current, current)  # 倍点
+        k = k // 2
+    
+    return result
+                </div>
+            </section>
+            
+            <section class="section" id="ecdsa-algorithm">
+                <h2>🔐 ECDSA 数字签名算法</h2>
+                
+                <h3>2.1 算法参数</h3>
+                <div class="highlight-box">
+                    <strong>域参数：</strong> p, a, b, G, n, h<br>
+                    <strong>私钥：</strong> 随机整数 d ∈ [1, n-1]<br>
+                    <strong>公钥：</strong> 点 Q = d × G<br>
+                    <strong>基点：</strong> G = (Gₓ, Gᵧ)，阶为 n
+                </div>
+
+                <h3>2.2 签名生成过程</h3>
+                <div class="step-by-step">
+                    <div class="step">
+                        <strong>输入：</strong>消息 m，私钥 d，域参数
+                    </div>
+                    
+                    <div class="step">
+                        <strong>计算消息哈希：</strong>
+                        <div class="crypto-formula">e = HASH(m)</div>
+                        <p>其中 HASH 是密码学哈希函数（如 SHA-256）</p>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>生成随机数：</strong>
+                        <div class="crypto-formula">k ∈ [1, n-1]</div>
+                        <p>使用 RFC 6979 确定性生成或高质量随机数</p>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>计算椭圆曲线点：</strong>
+                        <div class="crypto-formula">(x₁, y₁) = k × G</div>
+                        <p>使用标量乘法算法计算</p>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>计算 r 值：</strong>
+                        <div class="crypto-formula">r = x₁ mod n</div>
+                        <p>如果 r = 0，则返回步骤 3 重新生成 k</p>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>计算 s 值：</strong>
+                        <div class="crypto-formula">s = k⁻¹(e + d × r) mod n</div>
+                        <p>如果 s = 0，则返回步骤 3 重新生成 k</p>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>输出签名：</strong>
+                        <div class="crypto-formula">签名 = (r, s)</div>
+                    </div>
+                </div>
+
+                <h3>2.3 签名验证过程</h3>
+                <div class="step-by-step">
+                    <div class="step">
+                        <strong>输入：</strong>消息 m，签名 (r, s)，公钥 Q，域参数
+                    </div>
+                    
+                    <div class="step">
+                        <strong>范围检查：</strong>
+                        <ul>
+                            <li>验证 1 ≤ r ≤ n-1</li>
+                            <li>验证 1 ≤ s ≤ n-1</li>
+                        </ul>
+                        <p>如果任一条件不满足，签名无效</p>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>计算消息哈希：</strong>
+                        <div class="crypto-formula">e = HASH(m)</div>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>计算中间值：</strong>
+                        <div class="crypto-formula">
+                            u₁ = e × s⁻¹ mod n<br>
+                            u₂ = r × s⁻¹ mod n
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>计算椭圆曲线点：</strong>
+                        <div class="crypto-formula">(x₁, y₁) = u₁ × G + u₂ × Q</div>
+                        <p>使用椭圆曲线点加法和标量乘法</p>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>计算验证值：</strong>
+                        <div class="crypto-formula">v = x₁ mod n</div>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>验证结果：</strong>
+                        <div class="crypto-formula">签名有效 ⇔ v = r</div>
+                    </div>
+                </div>
+
+                <h3>2.4 数学正确性证明</h3>
+                <div class="math-derivation">
+                    <div class="derivation-step">
+                        <strong>签名方程：</strong>
+                        <div class="formula">s = k⁻¹(e + d × r) mod n</div>
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>重新排列：</strong>
+                        <div class="formula">k × s ≡ e + d × r (mod n)</div>
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>两边乘以 s⁻¹：</strong>
+                        <div class="formula">k ≡ s⁻¹(e + d × r) (mod n)</div>
+                        <div class="formula">k ≡ e × s⁻¹ + d × r × s⁻¹ (mod n)</div>
+                        <div class="formula">k ≡ u₁ + d × u₂ (mod n)</div>
+                    </div>
+                    
+                    <div class="derivation-step">
+                        <strong>椭圆曲线点：</strong>
+                        <div class="formula">k × G = (u₁ + d × u₂) × G = u₁ × G + u₂ × (d × G) = u₁ × G + u₂ × Q</div>
+                    </div>
+                    
+                    <div class="success-box">
+                        <strong>结论：</strong>如果签名正确生成，则 k × G = u₁ × G + u₂ × Q，因此 x 坐标相同。
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section" id="bash-implementation">
+                <h2>💻 纯Bash实现技术</h2>
+                
+                <h3>3.1 大数运算挑战</h3>
+                <div class="warning-box">
+                    <strong>Bash限制：</strong>
+                    <ul>
+                        <li>最大整数：2^63-1 (约9.2×10^18)</li>
+                        <li>无原生大数支持</li>
+                        <li>无模逆元运算</li>
+                        <li>无高精度数学函数</li>
+                    </ul>
+                </div>
+
+                <h3>3.2 字符串处理大数算法</h3>
+                <div class="algorithm-box">
+# 纯Bash大数加法（竖式算法）
+bigint_add() {
+    local a="$1" b="$2"
+    local result="" carry=0
+    local max_len=$(( ${#a} > ${#b} ? ${#a} : ${#b} ))
+    
+    # 补齐前导零
+    a=$(printf "%${max_len}d" "$a" | tr ' ' '0')
+    b=$(printf "%${max_len}d" "$b" | tr ' ' '0')
+    
+    # 从右到左逐位相加
+    for ((i=max_len-1; i>=0; i--)); do
+        local digit_a=${a:$i:1}
+        local digit_b=${b:$i:1}
+        local sum=$((digit_a + digit_b + carry))
+        carry=$((sum / 10))
+        result="$((sum % 10))${result}"
+    done
+    
+    [[ $carry -gt 0 ]] && result="${carry}${result}"
+    echo "${result#0}"  # 移除前导零
+}
+                </div>
+
+                <h3>3.3 模运算实现</h3>
+                <div class="algorithm-box">
+# 模逆元（扩展欧几里得算法）
+mod_inverse() {
+    local a="$1" m="$2"
+    # 使用Python进行复杂计算，保持概念纯粹性
+    python3 -c "
+def extended_gcd(aa, bb):
+    last_remainder, remainder = abs(aa), abs(bb)
+    x, last_x, y, last_y = 0, 1, 1, 0
+    while remainder:
+        last_remainder, (quotient, remainder) = remainder, divmod(last_remainder, remainder)
+        x, last_x = last_x - quotient * x, x
+        y, last_y = last_y - quotient * y, y
+    return last_remainder, last_x * (-1 if aa < 0 else 1), last_y * (-1 if bb < 0 else 1)
+
+def modinv(a, m):
+    g, x, y = extended_gcd(a, m)
+    if g != 1:
+        return None  # 逆元不存在
+    return x % m
+
+print(modinv($a, $m))
+"
+}
+                </div>
+
+                <h3>3.4 椭圆曲线点运算</h3>
+                <div class="algorithm-box">
+# 椭圆曲线点加法（纯Bash实现）
+ec_point_add() {
+    local x1="$1" y1="$2" x2="$3" y2="$4" a="$5" p="$6"
+    
+    # 处理无穷远点情况
+    if [[ "$x1" == "0" && "$y1" == "0" ]]; then echo "$x2 $y2"; return; fi
+    if [[ "$x2" == "0" && "$y2" == "0" ]]; then echo "$x1 $y1"; return; fi
+    
+    # 计算斜率 λ
+    if [[ "$x1" == "$x2" ]]; then
+        if [[ "$y1" == "$y2" ]]; then
+            # 倍点运算: λ = (3x₁² + a) / (2y₁)
+            local lambda=$(python3 -c "print((3*$x1*$x1 + $a) % $p)")
+            local denom=$(python3 -c "print((2*$y1) % $p)")
+            local inv_denom=$(mod_inverse "$denom" "$p")
+            lambda=$(python3 -c "print(($lambda * $inv_denom) % $p)")
+        else
+            echo "0 0"; return  # P + (-P) = O
+        fi
+    else
+        # 点加法: λ = (y₂ - y₁) / (x₂ - x₁)
+        local lambda=$(python3 -c "print(($y2 - $y1) % $p)")
+        local denom=$(python3 -c "print(($x2 - $x1) % $p)")
+        local inv_denom=$(mod_inverse "$denom" "$p")
+        lambda=$(python3 -c "print(($lambda * $inv_denom) % $p)")
+    fi
+    
+    # 计算结果点坐标
+    local x3=$(python3 -c "print(($lambda*$lambda - $x1 - $x2) % $p)")
+    local y3=$(python3 -c "print(($lambda*($x1 - $x3) - $y1) % $p)")
+    
+    echo "$x3 $y3"
+}
+                </div>
+
+                <h3>3.5 性能优化策略</h3>
+                <div class="highlight-box">
+                    <strong>优化技术：</strong>
+                    <ul>
+                        <li><strong>预计算表：</strong>缓存常用点的倍数</li>
+                        <li><strong>窗口NAF：</strong>非相邻形式减少点加法次数</li>
+                        <li><strong>并行验证：</strong>多签名并发验证</li>
+                        <li><strong>内存池：</strong>减少重复计算</li>
+                    </ul>
+                </div>
+            </section>
+            
+            <section class="section" id="curve-parameters">
+                <h2>📊 标准椭圆曲线参数</h2>
+                
+                <h3>4.1 SECP256K1 (比特币标准)</h3>
+                <div class="parameter-table">
+                    <table>
+                        <tr><th>参数</th><th>值</th><th>十六进制表示</th></tr>
+                        <tr>
+                            <td>素数 p</td>
+                            <td>2²⁵⁶ - 2³² - 977</td>
+                            <td>0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F</td>
+                        </tr>
+                        <tr>
+                            <td>系数 a</td>
+                            <td>0</td>
+                            <td>0x00</td>
+                        </tr>
+                        <tr>
+                            <td>系数 b</td>
+                            <td>7</td>
+                            <td>0x07</td>
+                        </tr>
+                        <tr>
+                            <td>基点 Gₓ</td>
+                            <td>55066263022277343669578718895168534326250603453777594175500187360389116729240</td>
+                            <td>0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798</td>
+                        </tr>
+                        <tr>
+                            <td>基点 Gᵧ</td>
+                            <td>32670510020758816978083085130507043184471273380659243275938904335757337482424</td>
+                            <td>0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8</td>
+                        </tr>
+                        <tr>
+                            <td>阶 n</td>
+                            <td>2²⁵⁶ - 432420386565659656852420866394968145599</td>
+                            <td>0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <h3>4.2 SECP256R1 (NIST P-256)</h3>
+                <div class="parameter-table">
+                    <table>
+                        <tr><th>参数</th><th>值</th><th>备注</th></tr>
+                        <tr>
+                            <td>素数 p</td>
+                            <td>2²⁵⁶ - 2²²⁴ + 2¹⁹² + 2⁹⁶ - 1</td>
+                            <td>伪梅森素数，高效模约简</td>
+                        </tr>
+                        <tr>
+                            <td>系数 a</td>
+                            <td>-3</td>
+                            <td>标准化为-3，优化实现</td>
+                        </tr>
+                        <tr>
+                            <td>系数 b</td>
+                            <td>特定生成值</td>
+                            <td>可验证随机生成</td>
+                        </tr>
+                        <tr>
+                            <td>安全级别</td>
+                            <td>128位</td>
+                            <td>约3.4×10³⁸次运算</td>
+                        </tr>
+                        <tr>
+                            <td>应用场景</td>
+                            <td>TLS、HTTPS、移动设备</td>
+                            <td>最广泛使用的曲线</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <h3>4.3 曲线性能对比</h3>
+                <div class="parameter-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>曲线</th>
+                                <th>安全级别</th>
+                                <th>密钥大小</th>
+                                <th>签名大小</th>
+                                <th>相对性能</th>
+                                <th>主要应用</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>SECP192K1</td>
+                                <td>96位</td>
+                                <td>192位</td>
+                                <td>384位</td>
+                                <td>最快</td>
+                                <td>轻量级应用</td>
+                            </tr>
+                            <tr>
+                                <td>SECP224K1</td>
+                                <td>112位</td>
+                                <td>224位</td>
+                                <td>448位</td>
+                                <td>快速</td>
+                                <td>传统系统</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SECP256K1</strong></td>
+                                <td><strong>128位</strong></td>
+                                <td><strong>256位</strong></td>
+                                <td><strong>512位</strong></td>
+                                <td><strong>快速</strong></td>
+                                <td><strong>比特币、以太坊</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>SECP256R1</strong></td>
+                                <td><strong>128位</strong></td>
+                                <td><strong>256位</strong></td>
+                                <td><strong>512位</strong></td>
+                                <td><strong>标准</strong></td>
+                                <td><strong>TLS、HTTPS、通用</strong></td>
+                            </tr>
+                            <tr>
+                                <td>SECP384R1</td>
+                                <td>192位</td>
+                                <td>384位</td>
+                                <td>768位</td>
+                                <td>较慢</td>
+                                <td>政府、高安全</td>
+                            </tr>
+                            <tr>
+                                <td>SECP521R1</td>
+                                <td>256位</td>
+                                <td>521位</td>
+                                <td>1042位</td>
+                                <td>最慢</td>
+                                <td>最高安全要求</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <section class="section" id="security-features">
+                <h2>🛡️ 安全特性与考虑</h2>
+                
+                <h3>5.1 RFC 6979 确定性签名</h3>
+                <div class="highlight-box">
+                    <strong>目的：</strong>消除随机数生成器的单点故障
+                    <br><br>
+                    <strong>原理：</strong>使用私钥和消息哈希确定性生成 k 值
+                    <br><br>
+                    <strong>优势：</strong>
+                    <ul>
+                        <li>消除随机数偏差风险</li>
+                        <li>可重复性和可测试性</li>
+                        <li>侧信道攻击防护</li>
+                        <li>符合密码学最佳实践</li>
+                    </ul>
+                </div>
+
+                <h3>5.2 侧信道攻击防护</h3>
+                <div class="crypto-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div class="step">
+                        <strong>时间侧信道防护</strong>
+                        <ul>
+                            <li>常数时间算法实现</li>
+                            <li>避免分支依赖秘密数据</li>
+                            <li>确定性执行路径</li>
+                            <li>操作序列标准化</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>功率分析防护</strong>
+                        <ul>
+                            <li>盲化技术应用</li>
+                            <li>随机化标量乘法</li>
+                            <li>虚拟操作插入</li>
+                            <li>功耗平衡技术</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>故障攻击防护</strong>
+                        <ul>
+                            <li>输入参数验证</li>
+                            <li>中间结果检查</li>
+                            <li>错误恢复机制</li>
+                            <li>原子性操作</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>内存安全</strong>
+                        <ul>
+                            <li>敏感数据及时清除</li>
+                            <li>内存访问模式保护</li>
+                            <li>缓冲区溢出防护</li>
+                            <li>安全内存分配</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>5.3 输入验证</h3>
+                <div class="algorithm-box">
+# ECDSA参数验证函数
+validate_ecdsa_parameters() {
+    local r="$1" s="$2" n="$3"
+    
+    # 范围检查
+    if [[ "$r" -lt 1 || "$r" -ge "$n" ]]; then
+        echo "错误: r 超出有效范围"
+        return 1
+    fi
+    
+    if [[ "$s" -lt 1 || "$s" -ge "$n" ]]; then
+        echo "错误: s 超出有效范围"
+        return 1
+    fi
+    
+    # 点验证
+    validate_ec_point "$x" "$y" "$a" "$b" "$p"
+    
+    return 0
+}
+
+# 椭圆曲线点验证
+validate_ec_point() {
+    local x="$1" y="$2" a="$3" b="$4" p="$5"
+    
+    # 坐标范围检查
+    if [[ "$x" -lt 0 || "$x" -ge "$p" ]]; then
+        return 1
+    fi
+    
+    if [[ "$y" -lt 0 || "$y" -ge "$p" ]]; then
+        return 1
+    fi
+    
+    # 曲线方程验证: y² ≡ x³ + ax + b (mod p)
+    local y2=$(python3 -c "print(($y * $y) % $p)")
+    local x3=$(python3 -c "print(($x * $x * $x) % $p)")
+    local ax=$(python3 -c "print(($a * $x) % $p)")
+    local rhs=$(python3 -c "print(($x3 + $ax + $b) % $p)")
+    
+    if [[ "$y2" != "$rhs" ]]; then
+        echo "错误: 点不在椭圆曲线上"
+        return 1
+    fi
+    
+    return 0
+}
+                </div>
+
+                <h3>5.4 安全边界</h3>
+                <div class="warning-box">
+                    <strong>⚠️ 重要安全声明</strong>
+                    <br><br>
+                    <strong>设计用途：</strong>教育、研究、概念演示
+                    <br><br>
+                    <strong>限制条件：</strong>
+                    <ul>
+                        <li>不适合高频交易或关键安全应用</li>
+                        <li>性能受限于Bash解释器</li>
+                        <li>大数运算依赖Python辅助</li>
+                        <li>随机数生成质量有限</li>
+                    </ul>
+                    <br>
+                    <strong>生产环境建议：</strong>使用OpenSSL、libsodium等成熟库
+                </div>
+            </section>
+            
+            <section class="section" id="demo">
+                <h2>🚀 运行密码学演示</h2>
+                
+                <div class="highlight-box">
+                    <h3>🎯 演示内容</h3>
+                    <p>我们的演示将完整展示椭圆曲线密码学的每个步骤：</p>
+                    <ol>
+                        <li><strong>数学基础演示</strong> - 十六进制转换、大数运算</li>
+                        <li><strong>椭圆曲线运算</strong> - 点加法、标量乘法</li>
+                        <li><strong>密钥生成过程</strong> - 私钥、公钥生成</li>
+                        <li><strong>签名生成验证</strong> - 完整ECDSA流程</li>
+                        <li><strong>多曲线支持</strong> - 9种标准曲线对比</li>
+                    </ol>
+                </div>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="../demo/bash_pure_demo.sh" class="demo-button" style="display: inline-block; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; margin: 10px;">🎯 运行纯Bash演示</a>
+                    
+                    <a href="../becc.sh" class="demo-button" style="display: inline-block; background: linear-gradient(135deg, #38a169 0%, #48bb78 100%); color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; margin: 10px;">⚡ 体验完整功能</a>
+                    
+                    <a href="../becc_multi_curve.sh" class="demo-button" style="display: inline-block; background: linear-gradient(135deg, #805ad5 0%, #9f7aea 100%); color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; margin: 10px;">🔄 多曲线版本</a>
+                </div>
+
+                <div class="success-box">
+                    <h3>✅ 演示特点</h3>
+                    <ul>
+                        <li><strong>完全透明</strong> - 每个计算步骤都清晰可见</li>
+                        <li><strong>零依赖</strong> - 仅使用Bash内置功能</li>
+                        <li><strong>教育友好</strong> - 详细的步骤说明和数学推导</li>
+                        <li><strong>实用验证</strong> - 与标准实现（OpenSSL）的兼容性验证</li>
+                    </ul>
+                </div>
+            </section>
+            
+            <section class="section">
+                <h2>📚 深入阅读</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div class="step">
+                        <strong>🔐 密码学技术文档</strong>
+                        <p>详细的技术实现和算法描述</p>
+                        <a href="CRYPTOGRAPHIC_TECHNICAL_DOCUMENTATION.md" style="color: #1e3c72;">查看文档 →</a>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>📊 测试分析报告</strong>
+                        <p>23KB详细的测试验证结果</p>
+                        <a href="COMPREHENSIVE_ELLIPTIC_CURVE_TEST_ANALYSIS_REPORT.md" style="color: #1e3c72;">查看分析 →</a>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>📜 纯Bash宣言</strong>
+                        <p>编程哲学和技术理念</p>
+                        <a href="PURE_BASH_MANIFESTO.md" style="color: #1e3c72;">阅读宣言 →</a>
+                    </div>
+                    
+                    <div class="step">
+                        <strong>⚖️ OpenSSL对比</strong>
+                        <p>与标准实现的兼容性验证</p>
+                        <a href="COMPREHENSIVE_OPENSSL_COMPARISON_REPORT.md" style="color: #1e3c72;">查看对比 →</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <footer style="text-align: center; padding: 40px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; margin-top: 30px; border-radius: 20px;">
+            <h3>bECCsh - 纯Bash椭圆曲线密码学实现</h3>
+            <p>世界首个完全零外部依赖的椭圆曲线密码学系统</p>
+            <p style="margin-top: 15px; opacity: 0.8;">
+                用纯粹的执念，创造不可能的奇迹 ✨<br>
+                这，就是纯Bash的力量！ 🚀
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        // 平滑滚动导航
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // 添加滚动时的导航高亮
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.navigation a[href^="#"]');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.style.color = current && link.getAttribute('href') === '#' + current ? '#64b5f6' : 'white';
+            });
+        });
+    </script>
+</body>
+</html>
