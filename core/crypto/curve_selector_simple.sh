@@ -189,3 +189,6 @@ demo_curve_selector_simple() {
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     demo_curve_selector_simple
 fi
+
+# 导出函数以便其他脚本使用
+export -f normalize_curve_name is_curve_supported select_curve_simple get_current_curve_params_simple

@@ -79,14 +79,14 @@ generate_ecdsa_signature() {
     local p a b gx gy n
     case "$curve_name" in
         "secp256k1")
-            source "${SCRIPT_DIR}/../curves/secp256k1_params.sh" 2>/dev/null || {
+            source "${LOCAL_SCRIPT_DIR}/../curves/secp256k1_params.sh" 2>/dev/null || {
                 echo "错误: 无法加载SECP256K1参数" >&2
                 return 1
             }
             local params=$(get_secp256k1_params)
             ;;
         "secp256r1")
-            source "${SCRIPT_DIR}/../curves/secp256r1_params.sh" 2>/dev/null || {
+            source "${LOCAL_SCRIPT_DIR}/../curves/secp256r1_params.sh" 2>/dev/null || {
                 echo "错误: 无法加载SECP256R1参数" >&2
                 return 1
             }
@@ -189,14 +189,14 @@ verify_ecdsa_signature_fixed() {
     local p a b gx gy n
     case "$curve_name" in
         "secp256k1")
-            source "${SCRIPT_DIR}/../curves/secp256k1_params.sh" 2>/dev/null || {
+            source "${LOCAL_SCRIPT_DIR}/../curves/secp256k1_params.sh" 2>/dev/null || {
                 echo "错误: 无法加载SECP256K1参数" >&2
                 return 1
             }
             local params=$(get_secp256k1_params)
             ;;
         "secp256r1")
-            source "${SCRIPT_DIR}/../curves/secp256r1_params.sh" 2>/dev/null || {
+            source "${LOCAL_SCRIPT_DIR}/../curves/secp256r1_params.sh" 2>/dev/null || {
                 echo "错误: 无法加载SECP256R1参数" >&2
                 return 1
             }
@@ -364,5 +364,202 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     test_fixed_ecdsa
 fi
 
+# 标准ECDSA函数 - 与becc.sh兼容
+# 生成ECDSA私钥
+ecdsa_generate_private_key() {
+    local max_attempts=10
+    local attempts=0
+    
+    # 获取曲线参数
+    local curve_params=$(get_current_curve_params_simple)
+    local n=$(echo "$curve_params" | cut -d' ' -f6)
+    
+    while [[ $attempts -lt $max_attempts ]]; do
+        # 生成随机私钥
+        local private_key=$(bigint_random "256")
+        
+        # 确保私钥在有效范围内 [1, n-1]
+        private_key=$(bigint_mod "$private_key" $(bigint_subtract "$n" "1"))
+        private_key=$(bigint_add "$private_key" "1")
+        
+        # 验证私钥有效性
+        if [[ $(bigint_compare "$private_key" "1") -ge 0 && \
+              $(bigint_compare "$private_key" $(bigint_subtract "$n" "1")) -le 0 ]]; then
+            echo "$private_key"
+            return 0
+        fi
+        
+        ((attempts++))
+    done
+    
+    echo "ECDSA错误: 无法生成有效的私钥" >&2
+    return 1
+}
+
+# 从私钥计算公钥
+ecdsa_get_public_key() {
+    local private_key="$1"
+    
+    # 获取曲线参数
+    local curve_params=$(get_current_curve_params_simple)
+    local p=$(echo "$curve_params" | cut -d' ' -f1)
+    local a=$(echo "$curve_params" | cut -d' ' -f2)
+    local gx=$(echo "$curve_params" | cut -d' ' -f4)
+    local gy=$(echo "$curve_params" | cut -d' ' -f5)
+    local n=$(echo "$curve_params" | cut -d' ' -f6)
+    
+    # 验证私钥
+    if [[ $(bigint_compare "$private_key" "1") -lt 0 || \
+          $(bigint_compare "$private_key" $(bigint_subtract "$n" "1")) -gt 0 ]]; then
+        echo "ECDSA错误: 私钥超出有效范围" >&2
+        return 1
+    fi
+    
+    # 计算公钥 Q = dG
+    local public_key=$(ec_scalar_mult "$private_key" "$gx" "$gy" "$a" "$p")
+    if [[ $? -ne 0 ]]; then
+        echo "ECDSA错误: 公钥计算失败" >&2
+        return 1
+    fi
+    
+    echo "$public_key"
+}
+
+# 计算消息的哈希值
+hash_message() {
+    local message="$1"
+    local hash_alg="${2:-sha256}"
+    
+    case "$hash_alg" in
+        "sha256")
+            if command -v sha256sum >/dev/null 2>&1; then
+                echo -n "$message" | sha256sum | cut -d' ' -f1
+            elif command -v shasum >/dev/null 2>&1; then
+                echo -n "$message" | shasum -a 256 | cut -d' ' -f1
+            else
+                # 备用哈希实现
+                echo "ECDSA错误: 未找到sha256sum或shasum命令" >&2
+                return 1
+            fi
+            ;;
+        "sha384")
+            if command -v sha384sum >/dev/null 2>&1; then
+                echo -n "$message" | sha384sum | cut -d' ' -f1
+            elif command -v shasum >/dev/null 2>&1; then
+                echo -n "$message" | shasum -a 384 | cut -d' ' -f1
+            else
+                echo "ECDSA错误: 未找到sha384sum或shasum命令" >&2
+                return 1
+            fi
+            ;;
+        "sha512")
+            if command -v sha512sum >/dev/null 2>&1; then
+                echo -n "$message" | sha512sum | cut -d' ' -f1
+            elif command -v shasum >/dev/null 2>&1; then
+                echo -n "$message" | shasum -a 512 | cut -d' ' -f1
+            else
+                echo "ECDSA错误: 未找到sha512sum或shasum命令" >&2
+                return 1
+            fi
+            ;;
+        *)
+            echo "ECDSA错误: 不支持的哈希算法: $hash_alg" >&2
+            return 1
+            ;;
+    esac
+}
+
+# 将十六进制哈希转换为整数
+hash_to_int() {
+    local hash_hex="$1"
+    
+    # 移除可能的空格和换行符
+    hash_hex=$(echo "$hash_hex" | tr -d '[:space:]')
+    
+    # 转换为小写
+    hash_hex=${hash_hex,,}
+    
+    # 转换为十进制
+    local hash_int=$(bashmath_hex_to_dec "$hash_hex" || echo "0")
+    
+    # 获取曲线参数
+    local curve_params=$(get_current_curve_params_simple)
+    local n=$(echo "$curve_params" | cut -d' ' -f6)
+    
+    # 确保哈希值小于曲线阶n
+    hash_int=$(bigint_mod "$hash_int" "$n")
+    
+    echo "$hash_int"
+}
+
+# ECDSA签名 - 兼容版本
+ecdsa_sign() {
+    local private_key="$1"
+    local message_hash_hex="$2"
+    local hash_alg="${3:-sha256}"
+    local curve_name="${4:-$CURRENT_CURVE_SIMPLE}"
+    
+    # 将十六进制哈希转换为整数
+    local message_hash=$(hash_to_int "$message_hash_hex")
+    
+    # 使用修复的签名函数
+    local signature=$(generate_ecdsa_signature "$private_key" "$message_hash" "$curve_name")
+    if [[ $? -ne 0 ]]; then
+        return 1
+    fi
+    
+    echo "$signature"
+}
+
+# ECDSA验证 - 兼容版本
+ecdsa_verify() {
+    local public_key_x="$1"
+    local public_key_y="$2"
+    local message_hash_hex="$3"
+    local r="$4"
+    local s="$5"
+    local hash_alg="${6:-sha256}"
+    local curve_name="${7:-$CURRENT_CURVE_SIMPLE}"
+    
+    # 将十六进制哈希转换为整数
+    local message_hash=$(hash_to_int "$message_hash_hex")
+    
+    # 使用修复的验证函数
+    verify_ecdsa_signature_fixed "$public_key_x" "$public_key_y" "$message_hash" "$r" "$s" "$curve_name"
+}
+
+# 编码ECDSA签名
+encode_ecdsa_signature() {
+    local r="$1"
+    local s="$2"
+    
+    # 简单的Base64编码
+    local signature_data="${r}:${s}"
+    echo -n "$signature_data" | base64 -w0
+}
+
+# 解码ECDSA签名
+decode_ecdsa_signature() {
+    local encoded_data="$1"
+    local -n r_ref="$2"
+    local -n s_ref="$3"
+    
+    # 解码Base64
+    local decoded_data=$(echo "$encoded_data" | base64 -d 2>/dev/null || echo "$encoded_data")
+    
+    # 解析签名数据
+    r_ref=$(echo "$decoded_data" | cut -d':' -f1)
+    s_ref=$(echo "$decoded_data" | cut -d':' -f2)
+    
+    if [[ -z "$r_ref" || -z "$s_ref" ]]; then
+        echo "错误: 签名解码失败" >&2
+        return 1
+    fi
+    
+    return 0
+}
+
 # 导出函数以便其他脚本使用
 export -f generate_deterministic_k_fixed generate_ecdsa_signature verify_ecdsa_signature_fixed
+export -f ecdsa_generate_private_key ecdsa_get_public_key hash_message hash_to_int
+export -f ecdsa_sign ecdsa_verify encode_ecdsa_signature decode_ecdsa_signature

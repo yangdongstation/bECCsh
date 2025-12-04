@@ -115,5 +115,5 @@ minimal_ecdsa() {
 
 # 如果直接运行此脚本，执行主函数
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main "$@"
+    minimal_ecdsa
 fi

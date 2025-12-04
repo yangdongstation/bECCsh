@@ -23,9 +23,9 @@ source "${LIB_DIR}/asn1.sh"
 source "${LIB_DIR}/entropy.sh"
 source "${LIB_DIR}/security.sh"
 
-# 导入修复的ECDSA函数
-source "${CORE_DIR}/crypto/ecdsa_fixed.sh" 2>/dev/null || {
-    echo "错误: 无法加载修复的ECDSA函数" >&2
+# 导入标准ECDSA函数（使用标准版本而非修复版本）
+source "${LIB_DIR}/ecdsa.sh" 2>/dev/null || {
+    echo "错误: 无法加载标准ECDSA函数" >&2
     exit 1
 }
 
@@ -219,6 +219,15 @@ init_crypto() {
     CURRENT_CURVE_N=$(echo "$params" | cut -d' ' -f6)
     CURRENT_CURVE_H=$(echo "$params" | cut -d' ' -f7)
     
+    # 设置标准库需要的全局变量（兼容层）
+    export CURVE_P="$CURRENT_CURVE_P"
+    export CURVE_A="$CURRENT_CURVE_A"
+    export CURVE_B="$CURRENT_CURVE_B"
+    export CURVE_GX="$CURRENT_CURVE_GX"
+    export CURVE_GY="$CURRENT_CURVE_GY"
+    export CURVE_N="$CURRENT_CURVE_N"
+    export CURVE_H="$CURRENT_CURVE_H"
+    
     log $LOG_INFO "已选择椭圆曲线: $CURRENT_CURVE_SIMPLE"
     log $LOG_INFO "曲线参数已加载"
     
@@ -314,7 +323,18 @@ cmd_sign() {
     
     # 生成签名
     log $LOG_DEBUG "生成签名 - 私钥: ${private_key:0:10}..., 哈希: $message_hash"
-    local signature=$(generate_ecdsa_signature "$private_key" "$message_hash" "$CURRENT_CURVE_SIMPLE")
+    
+    # 将消息哈希转换为十六进制字符串格式
+    local hash_hex=$(printf "%x" "$message_hash")
+    
+    # 使用标准ECDSA签名函数
+    if ! ecdsa_sign "$private_key" "$hash_hex" "$HASH_ALG"; then
+        error_exit $ERR_CRYPTO_OPERATION "签名生成失败"
+    fi
+    
+    # 获取签名结果
+    local r="$ECDSA_SIGNATURE_R"
+    local s="$ECDSA_SIGNATURE_S"
     
     if [[ $? -ne 0 ]]; then
         error_exit $ERR_CRYPTO_OPERATION "签名生成失败"
@@ -410,7 +430,11 @@ cmd_verify() {
     # 验证签名
     log $LOG_DEBUG "验证签名 - 公钥: ($pub_x, $pub_y), 哈希: $message_hash, r: $signature_r, s: $signature_s"
     
-    if verify_ecdsa_signature_fixed "$pub_x" "$pub_y" "$message_hash" "$signature_r" "$signature_s" "$CURRENT_CURVE_SIMPLE"; then
+    # 将消息哈希转换为十六进制字符串格式
+    local hash_hex=$(printf "%x" "$message_hash")
+    
+    # 使用标准ECDSA验证函数
+    if ecdsa_verify "$pub_x" "$pub_y" "$hash_hex" "$signature_r" "$signature_s" "$HASH_ALG"; then
         log $LOG_INFO "签名验证成功"
         echo "VALID"
         return 0
@@ -460,7 +484,19 @@ cmd_test() {
     
     # 测试签名
     echo "2. 测试签名功能..."
-    local signature=$(generate_ecdsa_signature "$test_private_key" "$test_hash" "$CURRENT_CURVE_SIMPLE")
+    
+    # 将消息哈希转换为十六进制字符串格式
+    local hash_hex=$(printf "%x" "$test_hash")
+    
+    # 使用标准ECDSA签名函数
+    if ! ecdsa_sign "$test_private_key" "$hash_hex" "$HASH_ALG"; then
+        echo "❌ 签名生成失败"
+        return 1
+    fi
+    
+    # 获取签名结果
+    local r="$ECDSA_SIGNATURE_R"
+    local s="$ECDSA_SIGNATURE_S"
     
     if [[ $? -eq 0 && -n "$signature" ]]; then
         local r=$(echo "$signature" | cut -d' ' -f1)
@@ -480,7 +516,11 @@ cmd_test() {
     
     # 测试验证
     echo "3. 测试签名验证..."
-    if verify_ecdsa_signature_fixed "$pub_x" "$pub_y" "$test_hash" "$r" "$s" "$CURRENT_CURVE_SIMPLE"; then
+    
+    # 将消息哈希转换为十六进制字符串格式
+    local hash_hex=$(printf "%x" "$test_hash")
+    
+    if ecdsa_verify "$pub_x" "$pub_y" "$hash_hex" "$r" "$s" "$HASH_ALG"; then
         echo "✅ 签名验证成功"
     else
         echo "❌ 签名验证失败"
@@ -491,7 +531,7 @@ cmd_test() {
     # 测试错误签名
     echo "4. 测试错误签名检测..."
     local wrong_r=$(bigint_add "$r" "1")
-    if verify_ecdsa_signature_fixed "$pub_x" "$pub_y" "$test_hash" "$wrong_r" "$s" "$CURRENT_CURVE_SIMPLE"; then
+    if ecdsa_verify "$pub_x" "$pub_y" "$hash_hex" "$wrong_r" "$s" "$HASH_ALG"; then
         echo "⚠️  错误签名验证通过 (预期应失败)"
     else
         echo "✅ 错误签名正确被拒绝"

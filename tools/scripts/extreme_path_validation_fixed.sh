@@ -88,12 +88,12 @@ echo
 echo "3. 检查主程序的导入路径..."
 for script in "becc.sh" "becc_multi_curve.sh" "becc_fixed.sh"; do
     echo "检查 $script 的导入:"
-    local script_path="/home/donz/bECCsh/$script"
-    local script_dir=$(dirname "$script_path")
+    script_path="/home/donz/bECCsh/$script"
+    script_dir=$(dirname "$script_path")
     
     while IFS= read -r line; do
         if [[ "$line" =~ ^source ]]; then
-            local source_path=$(extract_source_path "$line")
+            source_path=$(extract_source_path "$line")
             if [[ -n "$source_path" ]]; then
                 # 解析变量引用
                 source_path=$(echo "$source_path" | sed "s|\${SCRIPT_DIR}|$script_dir|g" | sed "s|\${LIB_DIR}|$script_dir/lib|g" | sed "s|\${CORE_DIR}|$script_dir/core|g")
@@ -101,7 +101,7 @@ for script in "becc.sh" "becc_multi_curve.sh" "becc_fixed.sh"; do
                 if [[ "$source_path" == /* ]]; then
                     check_file_exists "$source_path" "$script"
                 else
-                    local full_path="$script_dir/$source_path"
+                    full_path="$script_dir/$source_path"
                     check_file_exists "$full_path" "$script"
                 fi
             fi
@@ -115,7 +115,7 @@ echo "4. 检查库文件相互引用..."
 for lib_file in /home/donz/bECCsh/lib/*.sh; do
     if [[ -f "$lib_file" ]]; then
         echo "检查 $(basename "$lib_file"):"
-        local lib_dir=$(dirname "$lib_file")
+        lib_dir=$(dirname "$lib_file")
         
         # 检查相对路径引用
         if grep -n "\.\." "$lib_file" >/dev/null 2>&1; then
@@ -127,14 +127,14 @@ for lib_file in /home/donz/bECCsh/lib/*.sh; do
         # 检查source语句
         while IFS= read -r line; do
             if [[ "$line" =~ ^source ]]; then
-                local source_path=$(extract_source_path "$line")
+                source_path=$(extract_source_path "$line")
                 if [[ -n "$source_path" ]]; then
                     # 解析相对路径
-                    if [[ "$source_path" == \$(dirname* ]]; then
+                    if [[ "$source_path" == \$\(dirname* ]]; then
                         # 动态路径，跳过检查
                         continue
                     elif [[ "$source_path" != /* ]]; then
-                        local full_path="$lib_dir/$source_path"
+                        full_path="$lib_dir/$source_path"
                         if [[ ! -f "$full_path" ]]; then
                             echo -e "${RED}✗${NC} 找不到引用的文件: $source_path"
                             FAILED_CHECKS=$((FAILED_CHECKS + 1))
@@ -152,7 +152,7 @@ echo "5. 检查核心加密文件引用..."
 for crypto_file in /home/donz/bECCsh/core/crypto/*.sh; do
     if [[ -f "$crypto_file" ]]; then
         echo "检查 $(basename "$crypto_file"):"
-        local crypto_dir=$(dirname "$crypto_file")
+        crypto_dir=$(dirname "$crypto_file")
         
         # 检查相对路径引用
         if grep -n "\.\." "$crypto_file" >/dev/null 2>&1; then
