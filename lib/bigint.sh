@@ -23,9 +23,18 @@ bigint_error() {
     return 1
 }
 
+# 导出函数以便子shell使用
+export -f bigint_error
+
 # 验证数字格式
 bigint_validate() {
     local num="$1"
+    # 处理空字符串的情况
+    if [[ -z "$num" ]]; then
+        bigint_error "无效的数字格式: 空字符串"
+        return 1
+    fi
+    # 检查是否为有效的数字格式（包括0和负数）
     if [[ ! "$num" =~ ^[0-9]+$ ]] && [[ ! "$num" =~ ^-[0-9]+$ ]]; then
         bigint_error "无效的数字格式: $num"
         return 1
@@ -36,17 +45,37 @@ bigint_validate() {
 # 标准化数字（去除前导零）
 bigint_normalize() {
     local num="$1"
-    num=${num#-}  # 移除负号
-    num=${num#0*}  # 移除前导零
-    if [[ -z "$num" ]]; then
-        num="0"
+    local is_negative=0
+    
+    # 检查是否为负数
+    if [[ "$num" =~ ^- ]]; then
+        is_negative=1
+        num=${num#-}  # 移除负号
     fi
-    if [[ "$1" =~ ^- ]]; then
+    
+    # 处理全0的情况
+    if [[ "$num" =~ ^0+$ ]]; then
+        num="0"
+    elif [[ "$num" != "0" ]]; then
+        # 移除前导零
+        while [[ "$num" == 0* ]]; do
+            num=${num#0}
+            if [[ -z "$num" ]]; then
+                num="0"
+                break
+            fi
+        done
+    fi
+    
+    # 重新添加负号，但处理-0特殊情况
+    if [[ $is_negative -eq 1 ]] && [[ "$num" != "0" ]]; then
         echo "-$num"
     else
         echo "$num"
     fi
 }
+
+# 导出函数将在source后手动处理，避免导出不存在的函数
 
 # 比较两个大数
 bigint_compare() {

@@ -13,11 +13,11 @@ readonly COLOR_RESET='\033[0m'
 
 # 导入库
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/lib/bash_math.sh"
-source "${SCRIPT_DIR}/lib/bigint.sh"
-source "${SCRIPT_DIR}/lib/ec_curve.sh"
-source "${SCRIPT_DIR}/lib/ec_point.sh"
-source "${SCRIPT_DIR}/lib/ecdsa.sh"
+source "core/crypto/ec_math_fixed_simple.sh"
+# 归档依赖不存在，使用当前核心库
+# 归档依赖不存在，使用当前核心库
+# 归档依赖不存在，使用当前核心库
+# 归档依赖不存在，使用当前核心库
 source "${SCRIPT_DIR}/lib/security.sh"
 source "${SCRIPT_DIR}/lib/asn1.sh"
 source "${SCRIPT_DIR}/lib/entropy.sh"

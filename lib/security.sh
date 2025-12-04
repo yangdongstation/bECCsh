@@ -73,7 +73,9 @@ i2osp() {
 # OS2IP - 八位字节串到整数转换
 os2ip() {
     local x="$1"
-    bashmath_hex_to_dec "$x" || echo "0"
+    local result
+    result=$(bashmath_hex_to_dec "$x" 2>/dev/null) || result="0"
+    echo "$result"
 }
 
 # 位长度计算
@@ -159,7 +161,9 @@ rfc6979_generate_k() {
     done
     
     # 将t截断为qlen位
-    local k_candidate=$(os2ip "${t:0:$(((qlen + 7) / 8) * 2)}")
+    local byte_count=$(((qlen + 7) / 8))
+    local hex_char_count=$((byte_count * 2))
+    local k_candidate=$(os2ip "${t:0:$hex_char_count}")
     k_candidate=$(bigint_mod "$k_candidate" "$CURVE_N")
     
     # 检查k是否有效
@@ -183,7 +187,9 @@ rfc6979_generate_k() {
             t_len=$((${#t} * 4))
         done
         
-        k_candidate=$(os2ip "${t:0:$(((qlen + 7) / 8) * 2)}")
+        local byte_count=$(((qlen + 7) / 8))
+        local hex_char_count=$((byte_count * 2))
+        k_candidate=$(os2ip "${t:0:$hex_char_count}")
         k_candidate=$(bigint_mod "$k_candidate" "$CURVE_N")
         
         if [[ $(bigint_compare "$k_candidate" "1") -ge 0 && \

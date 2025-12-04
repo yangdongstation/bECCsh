@@ -193,6 +193,7 @@ parse_args() {
     CURVE_NAME=${CURVE_NAME:-"secp256r1"}
     HASH_ALG=${HASH_ALG:-"sha256"}
     OUTPUT_FILE=${OUTPUT_FILE:-""}
+    INPUT_FILE=${INPUT_FILE:-""}
     MESSAGE=${MESSAGE:-""}
     KEY_FILE=${KEY_FILE:-""}
     SIGNATURE_FILE=${SIGNATURE_FILE:-""}

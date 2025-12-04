@@ -17,6 +17,12 @@ bashmath_hex_to_dec() {
     hex=${hex#0X}  # 移除0X前缀
     hex="${hex^^}"  # 转换为大写
     
+    # 处理空字符串的情况
+    if [[ -z "$hex" ]]; then
+        echo "0"
+        return 1
+    fi
+    
     # 验证十六进制格式
     if [[ ! "$hex" =~ ^[0-9A-F]+$ ]]; then
         echo "0"
@@ -266,6 +272,9 @@ bashmath_test() {
     
     echo "测试完成!"
 }
+
+# 导出所有函数以便子shell使用
+export -f bashmath_hex_to_dec bashmath_dec_to_hex bashmath_log2 bashmath_divide_float bashmath_binary_to_dec bashmath_dec_to_binary bashmath_test
 
 # 如果直接运行此脚本，执行测试
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
