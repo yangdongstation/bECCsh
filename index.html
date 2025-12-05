@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>bECCsh - 纯Bash椭圆曲线密码学实现 | 零依赖密码学奇迹</title>
+    <title>bECCsh - 零依赖纯Bash椭圆曲线密码学 | 从零学ECC</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
@@ -19,21 +19,21 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         .header {
             text-align: center;
             color: white;
-            padding: 80px 0;
+            padding: 80px 30px;
             margin-bottom: 40px;
             position: relative;
         }
-        
+
         .github-link {
             position: absolute;
             top: 20px;
@@ -50,31 +50,19 @@
             transition: all 0.3s ease;
             z-index: 100;
         }
-        
+
         .github-link:hover {
             background: rgba(255, 255, 255, 0.3);
             border-color: rgba(255, 255, 255, 0.5);
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
-        
+
         .github-link::before {
             content: '🐙';
             margin-right: 8px;
-            font-size: 1.2em;
         }
-        
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1" /><stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:1" /></linearGradient></defs><circle cx="200" cy="200" r="100" fill="url(%23grad)" opacity="0.3"><animate attributeName="r" values="100;150;100" dur="3s" repeatCount="indefinite"/></circle><circle cx="800" cy="300" r="80" fill="url(%23grad)" opacity="0.2"><animate attributeName="r" values="80;120;80" dur="4s" repeatCount="indefinite"/></circle><circle cx="400" cy="700" r="120" fill="url(%23grad)" opacity="0.25"><animate attributeName="r" values="120;180;120" dur="5s" repeatCount="indefinite"/></circle></svg>') center/cover;
-            z-index: -1;
-        }
-        
+
         .header h1 {
             font-size: 4em;
             margin-bottom: 20px;
@@ -85,7 +73,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .header .subtitle {
             font-size: 1.8em;
             margin-bottom: 15px;
@@ -93,33 +81,58 @@
             animation: fadeInUp 1s ease-out 0.3s both;
             font-weight: 300;
         }
-        
+
         .header .tagline {
             font-size: 1.3em;
             opacity: 0.85;
             animation: fadeInUp 1s ease-out 0.6s both;
             font-weight: 200;
+            margin-bottom: 30px;
         }
-        
+
+        .quick-nav {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            animation: fadeInUp 1s ease-out 0.9s both;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
         .main-content {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
             animation: fadeIn 1s ease-out 0.9s both;
-            backdrop-filter: blur(10px);
         }
-        
+
         .section {
             padding: 50px 40px;
             border-bottom: 1px solid rgba(102, 126, 234, 0.1);
-            position: relative;
         }
-        
+
         .section:last-child {
             border-bottom: none;
         }
-        
+
         .section h2 {
             color: #4c51bf;
             font-size: 2.2em;
@@ -128,7 +141,7 @@
             align-items: center;
             font-weight: 600;
         }
-        
+
         .section h2::before {
             content: '';
             width: 6px;
@@ -137,1001 +150,729 @@
             margin-right: 20px;
             border-radius: 3px;
         }
-        
-        .section h3 {
-            color: #5a67d8;
-            font-size: 1.4em;
-            margin: 25px 0 15px 0;
-            font-weight: 500;
-        }
-        
-        .crypto-grid {
+
+        .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 25px;
             margin: 25px 0;
         }
-        
-        .crypto-card {
+
+        .card {
             background: linear-gradient(135deg, #f8f9ff 0%, #e6f7ff 100%);
             border-radius: 15px;
             padding: 30px;
             border: 1px solid rgba(102, 126, 234, 0.2);
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
-        
-        .crypto-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
-            transition: left 0.5s;
-        }
-        
-        .crypto-card:hover::before {
-            left: 100%;
-        }
-        
-        .crypto-card:hover {
+
+        .card:hover {
             transform: translateY(-8px);
             box-shadow: 0 15px 35px rgba(102, 126, 234, 0.2);
         }
-        
-        .crypto-card h4 {
+
+        .card h3 {
             color: #2d3748;
             margin-bottom: 15px;
             font-size: 1.2em;
-            font-weight: 600;
         }
-        
-        .crypto-card p {
+
+        .card p {
             color: #4a5568;
             font-size: 0.95em;
             line-height: 1.6;
         }
-        
-        .math-formula {
-            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
-            color: #e2e8f0;
-            padding: 25px;
-            border-radius: 12px;
-            font-family: 'Courier New', 'SF Mono', Monaco, monospace;
-            font-size: 0.95em;
-            overflow-x: auto;
-            margin: 30px 0;
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            position: relative;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        }
-        
-        .math-formula::before {
-            content: '数学公式';
-            position: absolute;
-            top: -12px;
-            left: 20px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 6px 14px;
+
+        .concept-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
             border-radius: 8px;
-            font-size: 0.8em;
+        }
+
+        .concept-box h4 {
+            color: #667eea;
+            margin-bottom: 10px;
             font-weight: 600;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-            z-index: 10;
-            letter-spacing: 0.5px;
         }
-        
-        /* 确保math-formula内部内容有足够的上边距 */
-        .math-formula > *:first-child {
-            margin-top: 10px;
+
+        .learning-path {
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe0cc 100%);
+            border: 2px solid #ffb347;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 25px 0;
         }
-        
-        /* 数学公式内部文本样式优化 */
-        .math-formula code,
-        .math-formula pre {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #a8edea;
+
+        .learning-path h3 {
+            color: #d97706;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .step {
+            display: flex;
+            align-items: start;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .step-number {
+            background: #d97706;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .step-content p {
+            color: #4a5568;
             font-size: 0.9em;
+            margin-bottom: 8px;
         }
-        
-        /* 数学公式中的列表样式 */
-        .math-formula ul,
-        .math-formula ol {
-            margin: 10px 0;
-            padding-left: 20px;
+
+        .step-content a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
         }
-        
-        .math-formula li {
-            margin: 8px 0;
+
+        .step-content a:hover {
+            text-decoration: underline;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
             line-height: 1.5;
         }
-        
-        .code-block {
-            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-            color: #e2e8f0;
-            padding: 25px;
-            border-radius: 12px;
-            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace;
-            font-size: 0.9em;
-            overflow-x: auto;
-            margin: 30px 0;
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            position: relative;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-        
-        .code-block::before {
-            content: '代码实现';
-            position: absolute;
-            top: -12px;
-            left: 20px;
-            background: linear-gradient(135deg, #38a169, #48bb78);
-            color: white;
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 0.8em;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3);
-            z-index: 10;
-            letter-spacing: 0.5px;
-        }
-        
-        /* 确保code-block内部内容有足够的上边距 */
-        .code-block > *:first-child {
-            margin-top: 10px;
-        }
-        
-        /* 代码块内部文本样式优化 */
-        .code-block code,
-        .code-block pre {
-            background: rgba(255, 255, 255, 0.05);
+
+        .highlight {
+            background: #fff5e6;
             padding: 2px 6px;
             border-radius: 4px;
-            color: #68d391;
-            font-size: 0.95em;
+            color: #d97706;
+            font-weight: 600;
         }
-        
-        /* 代码块语法高亮样式 */
-        .code-block .comment {
-            color: #68d391;
-            font-style: italic;
-        }
-        
-        .code-block .keyword {
-            color: #90cdf4;
-            font-weight: bold;
-        }
-        
-        .code-block .string {
-            color: #fbb6ce;
-        }
-        
-        .code-block .function {
-            color: #fbd38d;
-        }
-        
-        .highlight {
-            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
-            padding: 25px;
-            border-radius: 15px;
-            margin: 25px 0;
-            border-left: 5px solid #667eea;
-            font-size: 1.1em;
-            line-height: 1.7;
-        }
-        
-        .warning-box {
-            background: linear-gradient(120deg, #ffeaa7 0%, #fab1a0 100%);
-            padding: 25px;
-            border-radius: 15px;
-            margin: 25px 0;
-            border-left: 5px solid #e17055;
-            font-size: 1em;
-            line-height: 1.6;
-        }
-        
-        .achievement-grid {
+
+        .doc-links {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
-            margin-top: 25px;
-        }
-        
-        .achievement-card {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .achievement-card:hover {
-            border-color: #667eea;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
-        }
-        
-        .achievement-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-            display: block;
-        }
-        
-        .doc-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
             margin: 25px 0;
         }
-        
-        .doc-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
+
+        .doc-link {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
             border-radius: 12px;
+            padding: 25px;
             text-decoration: none;
+            color: #1e40af;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
-        
-        .doc-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+
+        .doc-link:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.1);
         }
-        
-        .doc-card h4 {
-            margin-bottom: 10px;
+
+        .doc-link h4 {
             font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #1e3a8a;
         }
-        
-        .doc-card p {
+
+        .doc-link p {
             font-size: 0.9em;
-            opacity: 0.9;
+            color: #3b82f6;
         }
-        
-        .demo-section {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            text-align: center;
-            padding: 60px 40px;
-            border-radius: 20px;
-            margin: 30px 0;
-        }
-        
-        .demo-button {
-            display: inline-block;
-            background: white;
-            color: #f5576c;
-            padding: 18px 35px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1.2em;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            margin: 10px;
-        }
-        
-        .demo-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
-        }
-        
-        .curve-table {
+
+        .comparison-table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
             background: white;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        
-        .curve-table th,
-        .curve-table td {
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
             padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .curve-table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
             font-weight: 600;
         }
-        
-        .curve-table tr:hover {
-            background: rgba(102, 126, 234, 0.05);
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
         }
-        
-        .footer {
-            text-align: center;
-            padding: 50px;
-            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+
+        .comparison-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .emoji-icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.3);
             color: white;
+            text-align: center;
+            padding: 30px;
             margin-top: 40px;
+            border-radius: 20px;
         }
-        
-        .footer-links {
-            margin-top: 25px;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .footer-links a {
+
+        footer a {
             color: #a8edea;
             text-decoration: none;
-            padding: 10px 20px;
-            border: 1px solid #a8edea;
-            border-radius: 25px;
-            transition: all 0.3s ease;
         }
-        
-        .footer-links a:hover {
-            color: white;
-            background: #a8edea;
-            border-color: white;
+
+        footer a:hover {
+            text-decoration: underline;
         }
-        
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-40px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @media (max-width: 768px) {
-            .header h1 { font-size: 2.8em; }
-            .header .subtitle { font-size: 1.4em; }
-            .section { padding: 30px 20px; }
-            .crypto-grid { grid-template-columns: 1fr; }
-            .doc-grid { grid-template-columns: 1fr; }
-            
-            /* 移动端优化数学公式和代码块 */
-            .math-formula {
-                padding: 20px 15px;
-                font-size: 0.85em;
-                margin: 20px 0;
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
-            
-            .code-block {
-                padding: 20px 15px;
-                font-size: 0.8em;
-                margin: 20px 0;
-            }
-            
-            .math-formula::before,
-            .code-block::before {
-                font-size: 0.7em;
-                padding: 4px 10px;
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
-        
-        /* 小屏幕优化 */
-        @media (max-width: 480px) {
-            .math-formula,
-            .code-block {
-                padding: 15px 10px;
-                font-size: 0.8em;
-            }
-            
-            .math-formula::before,
-            .code-block::before {
-                top: -10px;
-                left: 15px;
-                font-size: 0.65em;
-                padding: 3px 8px;
-            }
+
+        .success-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin: 5px 5px 5px 0;
         }
-        
-        /* 打印样式优化 */
-        @media print {
-            .math-formula,
-            .code-block {
-                break-inside: avoid;
-                box-shadow: none;
-                border: 1px solid #ccc;
-            }
-            
-            .math-formula::before,
-            .code-block::before {
-                box-shadow: none;
-                border: 1px solid #999;
-            }
+
+        .warning-badge {
+            display: inline-block;
+            background: #f59e0b;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin: 5px 5px 5px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header class="header">
-            <a href="https://github.com/yangdongstation/bECCsh/" class="github-link" target="_blank" rel="noopener">
-                GitHub 项目地址
-            </a>
-            <h1>bECCsh</h1>
-            <div class="subtitle">纯Bash椭圆曲线密码学实现</div>
-            <div class="tagline">零外部依赖的密码学奇迹 | 完全透明的算法教学</div>
-        </header>
-        
+        <a href="https://github.com/yangdongstation/bECCsh/" class="github-link">GitHub</a>
+
+        <div class="header">
+            <h1>🚀 bECCsh</h1>
+            <p class="subtitle">零依赖纯Bash椭圆曲线密码学</p>
+            <p class="tagline">从零开始学习密码学 | 完整ECDSA实现 | 9条标准曲线支持</p>
+
+            <div class="quick-nav">
+                <a href="#learning" class="nav-btn">📚 学习路径</a>
+                <a href="#concepts" class="nav-btn">💡 核心概念</a>
+                <a href="#docs" class="nav-btn">📖 文档</a>
+                <a href="#curves" class="nav-btn">🔐 椭圆曲线</a>
+                <a href="#usage" class="nav-btn">⚡ 快速开始</a>
+            </div>
+        </div>
+
         <div class="main-content">
-            <section class="section">
-                <h2>🎯 项目宣言</h2>
-                <div class="highlight">
-                    <strong>这不是一个普通的密码学项目。</strong><br>
-                    这是一个技术宣言，证明了看似不可能的事情：<br>
-                    <strong>复杂的椭圆曲线密码学可以完全用Bash内置功能实现。</strong>
-                </div>
-                
-                <p>
-                    bECCsh开始于一个简单的执念："不想使用bc，这个程序应当完全依赖bash，而不是把bash当胶水"。
-                    但这个执念推动我们走向了更远的地方——我们不仅移除了bc，还移除了<strong>所有</strong>外部依赖，
-                    实现了<strong>纯粹的Bash密码学</strong>。
+            <!-- 学习路径 -->
+            <div class="section" id="learning">
+                <h2><span class="emoji-icon">🎓</span>初学者学习路径</h2>
+                <p style="color: #4a5568; margin-bottom: 20px;">
+                    第一次学习椭圆曲线密码学？别担心！按照这个路径来，你会逐步理解这个奇妙的数学世界。
                 </p>
-                
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://github.com/yangdongstation/bECCsh/" target="_blank" rel="noopener" 
-                       style="display: inline-flex; align-items: center; background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 1.1em; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);">
-                        <span style="margin-right: 10px;">🐙</span>
-                        查看 GitHub 项目源码
-                    </a>
-                </div>
-            </section>
-            
-            <section class="section">
-                <h2>🔐 椭圆曲线密码学基础原理</h2>
-                
-                <h3>📐 椭圆曲线数学定义</h3>
-                <div class="math-formula">
-椭圆曲线在有限域上的标准方程：
 
-y² ≡ x³ + ax + b (mod p)
+                <div class="learning-path">
+                    <h3>📍 推荐学习顺序</h3>
 
-其中：
-• p 是大素数（特征值）
-• a 和 b 是曲线系数  
-• 满足 4a³ + 27b² ≠ 0 (mod p)（确保曲线非奇异）
-                </div>
-
-                <h3>🔗 椭圆曲线群运算</h3>
-                <div class="crypto-grid">
-                    <div class="crypto-card">
-                        <h4>🎯 点加法 (P + Q)</h4>
-                        <p>给定两点 P(x₁, y₁) 和 Q(x₂, y₂)，计算 R = P + Q：</p>
-                        <div class="math-formula">
-λ = (y₂ - y₁) × (x₂ - x₁)⁻¹ mod p
-x₃ = λ² - x₁ - x₂ mod p
-y₃ = λ(x₁ - x₃) - y₁ mod p
+                    <div class="step">
+                        <div class="step-number">1️⃣</div>
+                        <div class="step-content">
+                            <h4>理解基础概念（30分钟）</h4>
+                            <p><span class="highlight">模运算</span>、<span class="highlight">素数</span>、<span class="highlight">逆元</span></p>
+                            <p>👉 <a href="MATH_CRYPTOGRAPHY_GUIDE.md#第一部分基础数学">阅读：基础数学章节</a></p>
+                            <p style="color: #7c3aed;">✏️ 简单例子：17 mod 5 = 2（就像计算剩余的余数）</p>
                         </div>
                     </div>
-                    
-                    <div class="crypto-card">
-                        <h4>📈 倍点运算 (2P)</h4>
-                        <p>点P的倍点运算（点加倍）：</p>
-                        <div class="math-formula">
-λ = (3x₁² + a) × (2y₁)⁻¹ mod p
-x₃ = λ² - 2x₁ mod p  
-y₃ = λ(x₁ - x₃) - y₁ mod p
+
+                    <div class="step">
+                        <div class="step-number">2️⃣</div>
+                        <div class="step-content">
+                            <h4>学习椭圆曲线（1小时）</h4>
+                            <p><span class="highlight">曲线方程</span>、<span class="highlight">曲线上的点</span>、<span class="highlight">点加法</span></p>
+                            <p>👉 <a href="MATH_CRYPTOGRAPHY_GUIDE.md#第二部分椭圆曲线">阅读：椭圆曲线原理</a></p>
+                            <p style="color: #7c3aed;">✏️ 关键概念：用几何方法在曲线上"加"两个点</p>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3️⃣</div>
+                        <div class="step-content">
+                            <h4>掌握密钥管理（30分钟）</h4>
+                            <p><span class="highlight">私钥生成</span>、<span class="highlight">公钥计算</span>、<span class="highlight">为什么很难破解</span></p>
+                            <p>👉 <a href="MATH_CRYPTOGRAPHY_GUIDE.md#第四部分密钥管理">阅读：密钥对生成</a></p>
+                            <p style="color: #7c3aed;">✏️ 核心安全性：从公钥推算私钥需要千年时间</p>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">4️⃣</div>
+                        <div class="step-content">
+                            <h4>深入数字签名（1小时）</h4>
+                            <p><span class="highlight">签名生成</span>、<span class="highlight">签名验证</span>、<span class="highlight">数学证明</span></p>
+                            <p>👉 <a href="MATH_CRYPTOGRAPHY_GUIDE.md#第五部分数字签名">阅读：签名工作原理</a></p>
+                            <p style="color: #7c3aed;">✏️ 妙处：任何人都可以验证，但只有私钥所有者能签名</p>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">5️⃣</div>
+                        <div class="step-content">
+                            <h4>实践：运行bECCsh（30分钟）</h4>
+                            <p><span class="highlight">生成密钥对</span>、<span class="highlight">签名消息</span>、<span class="highlight">验证签名</span></p>
+                            <p>👉 <a href="#usage">查看：快速开始指南</a></p>
+                            <p style="color: #7c3aed;">✏️ 命令示例：./becc.sh keygen -c secp256r1 -f my_key.pem</p>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <h3>🗝️ ECDSA 数字签名算法</h3>
-                <div class="crypto-grid">
-                    <div class="crypto-card">
-                        <h4>✍️ 签名生成过程</h4>
-                        <p>给定消息m和私钥d：</p>
-                        <ol>
-                            <li>计算消息哈希：e = HASH(m)</li>
-                            <li>生成随机数：k ∈ [1, n-1]</li>
-                            <li>计算点：(x₁, y₁) = k × G</li>
-                            <li>计算：r = x₁ mod n，若r=0则重试</li>
-                            <li>计算：s = k⁻¹(e + d×r) mod n，若s=0则重试</li>
-                            <li>签名结果：(r, s)</li>
-                        </ol>
+            <!-- 核心概念 -->
+            <div class="section" id="concepts">
+                <h2><span class="emoji-icon">💡</span>核心概念（用人话解释）</h2>
+
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>🔐 模运算</h3>
+                        <p>就像时钟一样循环。13点 = 下午1点，因为 13 mod 12 = 1。密码学中用超大素数作为"时钟"。</p>
                     </div>
-                    
-                    <div class="crypto-card">
-                        <h4>🔍 签名验证过程</h4>
-                        <p>给定消息m、签名(r,s)和公钥Q：</p>
-                        <ol>
-                            <li>检查范围：1 ≤ r, s ≤ n-1</li>
-                            <li>计算消息哈希：e = HASH(m)</li>
-                            <li>计算：u₁ = e × s⁻¹ mod n</li>
-                            <li>计算：u₂ = r × s⁻¹ mod n</li>
-                            <li>计算点：(x₁, y₁) = u₁×G + u₂×Q</li>
-                            <li>验证：v = x₁ mod n</li>
-                            <li>结果：若v = r则签名有效</li>
-                        </ol>
+
+                    <div class="card">
+                        <h3>📈 椭圆曲线</h3>
+                        <p>一条满足特定数学方程的曲线（y² = x³ + ax + b）。在这条曲线上定义特殊的"加法"运算。</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>�� 点加法</h3>
+                        <p>不是普通加法！而是：过两个点的直线与曲线相交，然后取镜像。几何上很优美，数学上很强大。</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>🔑 私钥 vs 公钥</h3>
+                        <p><strong>私钥</strong>：你的秘密（像密码）。<strong>公钥</strong>：从私钥计算出来，可以公开分享（像公开电话号码）。</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>✍️ 数字签名</h3>
+                        <p>用私钥"盖章"，别人用公钥"验证"。证明这个消息来自你，而且没被篡改。</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>🛡️ 离散对数问题</h3>
+                        <p>正向很快：私钥 → 公钥（几秒）。反向很慢：公钥 → 私钥（数千年）。这个不对称性就是安���的源头。</p>
                     </div>
                 </div>
-            </section>
-            
-            <section class="section">
-                <h2>💡 纯Bash实现的技术突破</h2>
-                
-                <h3>🔢 纯Bash大数运算</h3>
-                <p>由于Bash原生不支持大数运算，我们使用字符串处理实现任意精度算法：</p>
-                
-                <div class="code-block">
-# 纯Bash大数加法（竖式算法）
-bigint_add() {
-    local a="$1" local b="$2"
-    local result="" local carry=0
-    
-    # 从右到左逐位相加
-    for ((i = 1; i <= max_len; i++)); do
-        local digit_a="${a: -$i:1}"
-        local digit_b="${b: -$i:1}"
-        local sum=$((digit_a + digit_b + carry))
-        carry=$((sum / 10))
-        result="$((sum % 10))${result}"
-    done
-    
-    [[ $carry -gt 0 ]] && result="${carry}${result}"
-    echo "${result#0*}"  # 移除前导零
-}
+
+                <div class="concept-box">
+                    <h4>🎯 为什么 ECC 这么神奇？</h4>
+                    <p>用 256 位密钥就能实现和 RSA 2048 位密钥相同的安全性。这意味着：</p>
+                    <ul style="margin-left: 20px; color: #4a5568;">
+                        <li>密钥更小 → 传输更快</li>
+                        <li>计算更少 → 更节能</li>
+                        <li>签名更小 → 节省空间</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 文档导航 -->
+            <div class="section" id="docs">
+                <h2><span class="emoji-icon">📚</span>完整文档</h2>
+                <p style="color: #4a5568; margin-bottom: 30px;">
+                    从初级到高级，选择适合你的学习资源。
+                </p>
+
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">🌱 初级（从零开始）</h3>
+                    <div class="doc-links">
+                        <a href="MATH_CRYPTOGRAPHY_GUIDE.md" class="doc-link">
+                            <h4>📖 完整数学密码学指南</h4>
+                            <p>✅ 初学者友好 | ✅ 包含示例 | ✅ 循序渐进</p>
+                        </a>
+                        <a href="README.md" class="doc-link">
+                            <h4>🚀 快速开始指南</h4>
+                            <p>✅ 安装说明 | ✅ 基本使用 | ✅ 命令示例</p>
+                        </a>
+                    </div>
                 </div>
 
-                <h3>🏗️ 有限域模运算</h3>
-                <div class="code-block">
-# 模逆元计算（扩展欧几里得算法）
-mod_inverse() {
-    local a="$1" p="$2"
-    # 使用Python进行复杂计算，但保持概念纯粹性
-    python3 -c "
-def extended_gcd(a, b):
-    if a == 0: return b, 0, 1
-    gcd, x1, y1 = extended_gcd(b % a, a)
-    x = y1 - (b // a) * x1
-    y = x1
-    return gcd, x, y
-
-def mod_inverse(a, m):
-    gcd, x, _ = extended_gcd(a, m)
-    if gcd != 1: return None
-    return (x % m + m) % m
-
-print(mod_inverse($a, $p))
-"
-}
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">📊 中级（深入理解）</h3>
+                    <div class="doc-links">
+                        <a href="beccsh/MATH_DOCUMENTATION.md" class="doc-link">
+                            <h4>🧮 数学文档</h4>
+                            <p>✅ 详细公式 | ✅ 算法说明 | ✅ 曲线参数</p>
+                        </a>
+                        <a href="RELIABILITY_REPORT.md" class="doc-link">
+                            <h4>✅ 可靠度测试</h4>
+                            <p>✅ 质量评分 | ✅ 性能基准 | ✅ 限制说明</p>
+                        </a>
+                    </div>
                 </div>
 
-                <h3>📍 椭圆曲线点运算</h3>
-                <div class="code-block">
-# 椭圆曲线点加法实现
-ec_point_add() {
-    local x1="$1" y1="$2" x2="$3" y2="$4" a="$5" p="$6"
-    
-    # 处理无穷远点情况
-    if [[ "$x1" == "0" && "$y1" == "0" ]]; then echo "$x2 $y2"; return; fi
-    if [[ "$x2" == "0" && "$y2" == "0" ]]; then echo "$x1 $y1"; return; fi
-    
-    # 计算斜率 λ
-    if [[ "$x1" == "$x2" ]]; then
-        if [[ "$y1" == "$y2" ]]; then
-            # 倍点运算: λ = (3x₁² + a) / (2y₁)
-            local lambda=$(mod_add $(mod_mult 3 $(mod_mult "$x1" "$x1" "$p") "$p") "$a" "$p")
-            local denom=$(mod_mult 2 "$y1" "$p")
-            lambda=$(mod_mult "$lambda" $(mod_inverse "$denom" "$p") "$p")
-        else
-            echo "0 0"; return  # P + (-P) = O
-        fi
-    else
-        # 点加法: λ = (y₂ - y₁) / (x₂ - x₁)
-        local lambda=$(mod_add "$y2" "-$y1" "$p")
-        local denom=$(mod_add "$x2" "-$x1" "$p")
-        lambda=$(mod_mult "$lambda" $(mod_inverse "$denom" "$p") "$p")
-    fi
-    
-    # 计算结果点坐标
-    local x3=$(mod_add $(mod_mult "$lambda" "$lambda" "$p") "-$x1" "$p")
-    x3=$(mod_add "$x3" "-$x2" "$p")
-    local y3=$(mod_add "$x1" "-$x3" "$p")
-    y3=$(mod_mult "$lambda" "$y3" "$p")
-    y3=$(mod_add "$y3" "-$y1" "$p")
-    
-    echo "$x3 $y3"
-}
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 15px;">🔬 高级（开发者）</h3>
+                    <div class="doc-links">
+                        <a href="CLAUDE.md" class="doc-link">
+                            <h4>💻 开发指南</h4>
+                            <p>✅ 快速命令 | ✅ 架构设计 | ✅ 常见任务</p>
+                        </a>
+                        <a href="beccsh/CRYPTOGRAPHIC_SECURITY_ANALYSIS.md" class="doc-link">
+                            <h4>🔐 安全分析</h4>
+                            <p>✅ 安全特性 | ✅ 已知限制 | ✅ 使用建议</p>
+                        </a>
+                    </div>
                 </div>
-            </section>
-            
-            <section class="section">
-                <h2>📊 支持的椭圆曲线参数</h2>
-                
-                <table class="curve-table">
+            </div>
+
+            <!-- 椭圆曲线对比 -->
+            <div class="section" id="curves">
+                <h2><span class="emoji-icon">🔐</span>支持的椭圆曲线</h2>
+                <p style="color: #4a5568; margin-bottom: 20px;">
+                    选择适合你的应用场景的椭圆曲线。
+                </p>
+
+                <table class="comparison-table">
                     <thead>
                         <tr>
                             <th>曲线名称</th>
-                            <th>标准</th>
+                            <th>密钥大小</th>
                             <th>安全级别</th>
-                            <th>应用场景</th>
-                            <th>技术特点</th>
+                            <th>主要用途</th>
+                            <th>生成速度</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>secp256k1</strong></td>
-                            <td>SECG</td>
-                            <td>128位</td>
-                            <td>比特币、以太坊</td>
-                            <td>Koblitz曲线，高效计算</td>
+                            <td><strong>secp256r1</strong><br>(P-256)</td>
+                            <td>256 位</td>
+                            <td>128 位</td>
+                            <td>TLS/SSL, 政府应用</td>
+                            <td>标准</td>
                         </tr>
                         <tr>
-                            <td><strong>secp256r1</strong></td>
-                            <td>NIST P-256</td>
-                            <td>128位</td>
-                            <td>TLS、HTTPS、移动设备</td>
-                            <td>通用标准，广泛支持</td>
+                            <td><strong>secp256k1</strong><br>(Bitcoin)</td>
+                            <td>256 位</td>
+                            <td>128 位</td>
+                            <td>区块链, 加密货币</td>
+                            <td>较快</td>
                         </tr>
                         <tr>
-                            <td><strong>secp384r1</strong></td>
-                            <td>NIST P-384</td>
-                            <td>192位</td>
-                            <td>政府、金融、高安全</td>
-                            <td>更高安全级别</td>
+                            <td><strong>secp384r1</strong><br>(P-384)</td>
+                            <td>384 位</td>
+                            <td>192 位</td>
+                            <td>长期安全, 关键应用</td>
+                            <td>较慢</td>
                         </tr>
                         <tr>
-                            <td><strong>secp521r1</strong></td>
-                            <td>NIST P-521</td>
-                            <td>256位</td>
-                            <td>最高安全要求</td>
+                            <td><strong>secp521r1</strong><br>(P-521)</td>
+                            <td>521 位</td>
+                            <td>256 位</td>
                             <td>最高安全级别</td>
-                        </tr>
-                        <tr>
-                            <td><strong>brainpoolP256r1</strong></td>
-                            <td>RFC 5639</td>
-                            <td>128位</td>
-                            <td>欧洲标准</td>
-                            <td>可验证随机参数生成</td>
+                            <td>最慢</td>
                         </tr>
                     </tbody>
                 </table>
-            </section>
-            
-            <section class="section">
-                <h2>📚 核心技术文档与专业展示</h2>
-                <p>深入了解我们的密码学实现和技术突破：</p>
-                
-                <div class="doc-grid">
-                    <a href="index_cryptographic.html" class="doc-card">
-                        <h4>🔐 密码学技术详解</h4>
-                        <p>交互式展示椭圆曲线密码学技术实现，包含算法步骤和代码示例</p>
-                    </a>
-                    
-                    <a href="index_mathematical.html" class="doc-card">
-                        <h4>📐 数学原理展示</h4>
-                        <p>详细数学公式和推导过程，从零开始理解密码学本质</p>
-                    </a>
-                    
-                    <a href="docs/technical/CRYPTOGRAPHIC_TECHNICAL_DOCUMENTATION.md" class="doc-card">
-                        <h4>📋 完整技术文档</h4>
-                        <p>16KB详细技术文档，包含算法原理、实现细节和安全考虑</p>
-                    </a>
-                    
-                    <a href="archive/historical_completion_docs/technical_docs/MATH_REPLACEMENT.md" class="doc-card">
-                        <h4>🔧 数学函数替代方案</h4>
-                        <p>如何用纯Bash函数替代bc计算器，实现零外部依赖的技术方案</p>
-                    </a>
-                    
-                    <a href="docs/project/PURE_BASH_MANIFESTO.md" class="doc-card">
-                        <h4>📜 纯Bash编程宣言</h4>
-                        <p>阐述纯Bash编程哲学和技术理念，展现编程的纯粹之美</p>
-                    </a>
-                    
-                    <a href="docs/reports/COMPREHENSIVE_ELLIPTIC_CURVE_TEST_ANALYSIS_REPORT.md" class="doc-card">
-                        <h4>📊 综合测试分析报告</h4>
-                        <p>23KB详细测试分析，验证算法正确性和安全性，与OpenSSL对比</p>
-                    </a>
+
+                <div class="concept-box" style="background: #f0fdf4; border-left-color: #10b981;">
+                    <h4 style="color: #10b981;">💡 如何选择？</h4>
+                    <ul style="color: #4a5568; margin-left: 20px;">
+                        <li><strong>大多数应用</strong> → 选择 secp256r1（NIST标准，最受信任）</li>
+                        <li><strong>区块链</strong> → 选择 secp256k1（比特币使用）</li>
+                        <li><strong>长期加密</strong> → 选择 secp384r1 或更高</li>
+                        <li><strong>学习研究</strong> → 任选都可以，体验差异</li>
+                    </ul>
                 </div>
-            </section>
-            
-            <section class="section">
-                <h2>🚀 体验纯Bash密码学</h2>
-                <div class="demo-section">
-                    <h3>🎮 运行密码学演示</h3>
-                    <p>见证完全使用Bash内置功能实现的密码学奇迹</p>
-                    
-                    <a href="demo/bash_pure_demo.sh" class="demo-button" onclick="runDemo('basic'); return false;">
-                        🎯 基础概念演示
-                    </a>
-                    <a href="demo/demo_multi_curve_showcase.sh" class="demo-button" onclick="runDemo('multi'); return false;">
-                        🔀 多曲线展示
-                    </a>
-                    <a href="becc.sh" class="demo-button" onclick="runDemo('full'); return false;">
-                        ⚡ 完整功能体验
-                    </a>
-                    
-                    <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.9;">
-                        演示将展示：十六进制转换 → 大数运算 → 椭圆曲线 → 哈希函数 → 随机数生成 → 密钥生成 → 签名验证<br>
-                        <strong>完全零外部依赖，仅使用Bash内置功能！</strong>
+            </div>
+
+            <!-- 快速开始 -->
+            <div class="section" id="usage">
+                <h2><span class="emoji-icon">⚡</span>快速开始</h2>
+
+                <h3>📋 系统要求</h3>
+                <div class="concept-box">
+                    <ul style="color: #4a5568;">
+                        <li>✅ Bash 4.0+ （大多数Linux/macOS都有）</li>
+                        <li>✅ 标准工具：sha256sum, xxd, base64</li>
+                        <li>✅ /dev/urandom（Linux/macOS）</li>
+                        <li>❌ <strong>不需要</strong>：bc、awk、python 等外部工具</li>
+                    </ul>
+                </div>
+
+                <h3>🔧 安装和基本命令</h3>
+
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>1️⃣ 生成密钥对</h3>
+                        <div class="code-block">./becc.sh keygen \
+  -c secp256r1 \
+  -f my_key.pem</div>
+                        <p style="color: #4a5568; margin-top: 15px;">
+                            生成 <code>my_key.pem</code>（私钥）和 <code>my_key_public.pem</code>（公钥）
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <h3>2️⃣ 签名消息</h3>
+                        <div class="code-block">./becc.sh sign \
+  -c secp256r1 \
+  -k my_key.pem \
+  -m "Hello World" \
+  -f signature.der</div>
+                        <p style="color: #4a5568; margin-top: 15px;">
+                            为消息生成签名，保存到 <code>signature.der</code>
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <h3>3️⃣ 验证签名</h3>
+                        <div class="code-block">./becc.sh verify \
+  -c secp256r1 \
+  -k my_key_public.pem \
+  -m "Hello World" \
+  -s signature.der</div>
+                        <p style="color: #4a5568; margin-top: 15px;">
+                            验证签名是否有效。输出：VALID 或 INVALID
+                        </p>
+                    </div>
+                </div>
+
+                <h3>⏱️ 性能提示</h3>
+                <div class="concept-box" style="background: #fef3c7; border-left-color: #f59e0b;">
+                    <h4 style="color: #f59e0b;">⚠️ 耐心等待</h4>
+                    <p style="color: #4a5568;">
+                        bECCsh 是纯 Bash 实现，性能较慢（这是预期的！）：
+                    </p>
+                    <ul style="color: #4a5568; margin-left: 20px;">
+                        <li><strong>密钥生成</strong>：约 120 秒</li>
+                        <li><strong>签名</strong>：约 380 秒</li>
+                        <li><strong>验证</strong>：约 450 秒</li>
+                    </ul>
+                    <p style="color: #4a5568; margin-top: 15px;">
+                        💡 使用 <code>timeout 500 ./becc.sh ...</code> 或在后台运行
                     </p>
                 </div>
-            </section>
-            
-            <section class="section">
-                <h2>🎓 专业技术展示</h2>
-                <div class="highlight">
-                    <strong>深入学习密码学原理</strong><br>
-                    我们为您准备了详细的技术展示页面，帮助您深入理解椭圆曲线密码学的数学原理和实现细节。
-                </div>
-                
-                <div class="doc-grid">
-                    <a href="index_cryptographic.html" class="doc-card">
-                        <h4>🔐 密码学技术详解</h4>
-                        <p>交互式展示ECDSA算法实现，包含完整的代码示例和步骤说明。适合想要理解技术实现细节的开发者。</p>
-                    </a>
-                    
-                    <a href="index_mathematical.html" class="doc-card">
-                        <h4>📐 数学原理展示</h4>
-                        <p>详细的数学公式推导和算法证明，从零开始理解椭圆曲线密码学的数学基础。适合密码学学习者和研究者。</p>
-                    </a>
-                </div>
-                
-                <p style="text-align: center; margin-top: 20px; font-style: italic;">
-                    "理解数学才能真正理解安全，看到代码才能真正理解实现。"
-                </p>
-            </section>
-            
-            <section class="section">
-                <h2>🏆 技术成就展示</h2>
-                <div class="achievement-grid">
-                    <div class="achievement-card">
-                        <div class="achievement-icon">🎯</div>
-                        <h3>零外部依赖</h3>
-                        <p>仅使用Bash内置功能，实现了完整的密码学功能链，无需bc、awk、python等任何外部工具</p>
-                    </div>
-                    
-                    <div class="achievement-card">
-                        <div class="achievement-icon">🔐</div>
-                        <h3>完整ECDSA实现</h3>
-                        <p>支持9种标准椭圆曲线的签名和验证，符合RFC标准，与OpenSSL兼容</p>
-                    </div>
-                    
-                    <div class="achievement-card">
-                        <div class="achievement-icon">📊</div>
-                        <h3>纯Bash数学引擎</h3>
-                        <p>使用字符串处理实现任意精度大数运算，突破Bash算术限制，支持模运算和模逆元</p>
-                    </div>
-                    
-                    <div class="achievement-card">
-                        <div class="achievement-icon">🛡️</div>
-                        <h3>企业级安全</h3>
-                        <p>RFC 6979确定性签名、侧信道攻击防护、高质量熵收集、输入验证等安全特性</p>
-                    </div>
-                    
-                    <div class="achievement-card">
-                        <div class="achievement-icon">🎓</div>
-                        <h3>完美教学工具</h3>
-                        <p>算法完全透明，无任何黑盒依赖，是密码学教学和研究的最佳范例</p>
-                    </div>
-                    
-                    <div class="achievement-card">
-                        <div class="achievement-icon">💎</div>
-                        <h3>编程艺术</h3>
-                        <p>展现了用简单工具创造复杂功能的编程美学，体现了纯粹编程的哲学思想</p>
-                    </div>
-                </div>
-            </section>
-            
-            <section class="section">
-                <h2>🎯 适用场景与价值</h2>
-                <div class="crypto-grid">
-                    <div class="crypto-card">
-                        <h4>🎓 密码学教学</h4>
-                        <p>完美的密码学教学工具，算法完全透明，适合课堂演示和学生学习。教师可以逐步展示每个计算步骤，学生可以清楚看到算法的内部工作原理。</p>
-                    </div>
-                    
-                    <div class="crypto-card">
-                        <h4>🔬 算法研究</h4>
-                        <p>适合密码学算法研究和概念验证，可以清楚看到每个实现细节。研究人员可以修改参数，观察算法行为，验证理论结果。</p>
-                    </div>
-                    
-                    <div class="crypto-card">
-                        <h4>🚀 技术展示</h4>
-                        <p>作为编程技术展示的范例，展现了Bash语言的强大能力和灵活性。证明了简单工具也能创造复杂功能。</p>
-                    </div>
-                    
-                    <div class="crypto-card">
-                        <h4>🛠️ 应急方案</h4>
-                        <p>在无外部依赖的受限环境中，作为应急的密码学解决方案。适合嵌入式系统、容器环境或安全要求极高的场景。</p>
-                    </div>
-                    
-                    <div class="crypto-card">
-                        <h4>💡 编程启发</h4>
-                        <p>启发开发者重新思考"依赖"和"纯粹性"的编程哲学。展示了如何用最基本的工具解决最复杂的问题。</p>
-                    </div>
-                    
-                    <div class="crypto-card">
-                        <h4>🎨 编程艺术</h4>
-                        <p>作为编程艺术的展示作品，展现了用简单工具创造复杂功能的美学价值。每个函数都体现了算法的优雅性。</p>
-                    </div>
-                </div>
-            </section>
-            
-            <section class="section">
-                <h2>⚠️ 重要安全声明</h2>
-                <div class="warning-box">
-                    <strong>🔒 安全警告与使用限制</strong><br><br>
-                    
-                    <strong>主要用途：</strong>本项目主要用于<strong>教育、研究和概念演示</strong>目的。
-                    <br><br>
-                    
-                    <strong>性能限制：</strong>由于纯Bash实现的性能限制，不推荐在高频或关键安全应用中使用。
-                    <br><br>
-                    
-                    <strong>生产环境建议：</strong>对于生产环境，建议使用经过充分测试的专业密码学库，如OpenSSL、libsodium、BoringSSL等。
-                    <br><br>
-                    
-                    <strong>安全边界：</strong>
-                    • 适合教学演示和概念验证<br>
-                    • 适合无依赖环境的应急使用<br>
-                    • 适合密码学算法研究<br>
-                    • 不适合高价值交易签名<br>
-                    • 不适合高频密码学操作
-                </div>
-            </section>
-            
-            <section class="section">
-                <h2>🌟 技术突破总结</h2>
-                <div class="highlight">
-                    <strong>技术成就：</strong>我们成功实现了完全零外部依赖的椭圆曲线密码学系统<br>
-                    <strong>算法突破：</strong>使用纯Bash实现了从数学运算到签名验证的完整功能链<br>
-                    <strong>教育价值：</strong>为密码学教学提供了完美的透明实现范例<br>
-                    <strong>哲学意义：</strong>证明了用简单工具也能创造复杂功能的技术美学<br>
-                    <strong>创新价值：</strong>推动了Bash编程和密码学实现的边界
-                </div>
-                
-                <p style="text-align: center; font-size: 1.3em; margin-top: 25px;">
-                    <strong>这，就是纯Bash的力量！</strong> 🚀
-                </p>
-                
-                <p style="text-align: center; font-style: italic; margin-top: 15px;">
-                    "有时候，最不合理的执念，会带来最美丽的结果。"<br>
-                    "纯粹即力量，简约即美学，执念即成就！"
-                </p>
-            </section>
-        </div>
-        
-        <footer class="footer">
-            <p><strong>bECCsh - 纯Bash椭圆曲线密码学实现</strong></p>
-            <p>零外部依赖的技术奇迹 | 完全透明的算法教学</p>
-            
-            <div class="footer-links">
-                <a href="https://github.com/yangdongstation/bECCsh/" target="_blank" rel="noopener" style="background: linear-gradient(135deg, #667eea, #764ba2); border: none;">
-                    🐙 GitHub 项目地址
-                </a>
-                <a href="README.md">📖 项目文档</a>
-                <a href="index_cryptographic.html">🔐 密码学技术详解</a>
-                <a href="index_mathematical.html">📐 数学原理展示</a>
-                <a href="docs/technical/CRYPTOGRAPHIC_TECHNICAL_DOCUMENTATION.md">📚 技术文档</a>
-                <a href="docs/project/PURE_BASH_MANIFESTO.md">📜 纯Bash宣言</a>
-                <a href="demo/bash_pure_demo.sh">🎮 运行演示</a>
-                <a href="becc.sh">⚡ 完整版本</a>
-                <a href="becc_multi_curve.sh">🔄 多曲线版本</a>
+
+                <h3>📚 获取帮助</h3>
+                <div class="code-block"># 查看所有命令和选项
+./becc.sh --help
+
+# 查看特定命令的详细帮助
+./becc.sh keygen --help</div>
             </div>
-            
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+
+            <!-- 使用场景 -->
+            <div class="section">
+                <h2><span class="emoji-icon">🎯</span>适用场景</h2>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h3 style="color: #10b981; margin-bottom: 15px;">✅ 非常适合</h3>
+                        <div class="concept-box" style="background: #f0fdf4; border-left-color: #10b981;">
+                            <ul style="color: #4a5568;">
+                                <li>🎓 密码学教学</li>
+                                <li>🔬 算法研究</li>
+                                <li>📚 学习 Bash 编程</li>
+                                <li>🧪 概念验证</li>
+                                <li>🏜️ 资源受限环境</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 style="color: #ef4444; margin-bottom: 15px;">❌ 不适合</h3>
+                        <div class="concept-box" style="background: #fef2f2; border-left-color: #ef4444;">
+                            <ul style="color: #4a5568;">
+                                <li>💼 生产环境密码</li>
+                                <li>💰 金融应用</li>
+                                <li>⏱️ 实时系统</li>
+                                <li>🔐 关键基础设施</li>
+                                <li>📱 高频操作</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 项目特性 -->
+            <div class="section">
+                <h2><span class="emoji-icon">✨</span>项目特性</h2>
+
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>🚀 零外部依赖</h3>
+                        <p>完全用 Bash 实现。不需要 bc、awk、python 或任何库。只要有 Bash 就能运行。</p>
+                        <span class="success-badge">100% Bash</span>
+                    </div>
+
+                    <div class="card">
+                        <h3>🔐 完整ECDSA</h3>
+                        <p>支持完整的椭圆曲线签名算法。包括签名生成、验证、RFC 6979确定性k值。</p>
+                        <span class="success-badge">完全兼容</span>
+                    </div>
+
+                    <div class="card">
+                        <h3>📈 多曲线支持</h3>
+                        <p>支持 9 条标准椭圆曲线，从 256 位到 521 位。满足不同安全需求。</p>
+                        <span class="success-badge">9+ 曲线</span>
+                    </div>
+
+                    <div class="card">
+                        <h3>📚 详细文档</h3>
+                        <p>包含完整的数学解释、密码学原理、使用指南。初学者也能理解。</p>
+                        <span class="success-badge">易理解</span>
+                    </div>
+
+                    <div class="card">
+                        <h3>🛡️ 安全特性</h3>
+                        <p>实现了侧信道防护、常量时间比较、安全的随机数生成。</p>
+                        <span class="success-badge">安全</span>
+                    </div>
+
+                    <div class="card">
+                        <h3>🎓 教育价值</h3>
+                        <p>代码清晰易读，是学习密码学和 Bash 编程的最佳教材。</p>
+                        <span class="success-badge">极佳</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="section">
+                <h2><span class="emoji-icon">❓</span>常见问题</h2>
+
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>Q: 为什么这么慢？</h3>
+                        <p><strong>A:</strong> 这是预期的！Bash 不是为密码学优化的。我们用字符串做数学，当然比编译语言慢 1000+ 倍。但这样做的好处是完全可读和审查。</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>Q: 安全吗？</h3>
+                        <p><strong>A:</strong> 算法是安全的，但不推荐生产使用。主要原因是性能，以及未经专业安全审计。适合教学和研究。</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>Q: 可以用于生产吗？</h3>
+                        <p><strong>A:</strong> 不推荐。虽然算法正确，但性能太低。生产环境应使用 OpenSSL 或 libsodium 等专业库。</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>Q: 为什么没有使用 bc？</h3>
+                        <p><strong>A:</strong> bc 是外部依赖。我们追求零依赖，所以用纯 Bash 字符串运算实现大数算术。这展示了 Bash 的强大能力。</p>
+                    </div>
+                </div>
+            </div>
+
+            <footer>
+                <h3 style="margin-bottom: 20px;">🌟 bECCsh - 纯 Bash 的力量</h3>
                 <p style="margin-bottom: 15px;">
-                    <strong>🌟 项目地址：</strong>
-                    <a href="https://github.com/yangdongstation/bECCsh/" target="_blank" rel="noopener" 
-                       style="color: #a8edea; text-decoration: none; font-weight: 600;">
+                    证明了 Bash 不仅仅是胶水语言，而是一个完整的编程环境。
+                </p>
+                <p style="margin-bottom: 20px;">
+                    <strong>项目地址：</strong><br>
+                    <a href="https://github.com/yangdongstation/bECCsh/" target="_blank">
                         https://github.com/yangdongstation/bECCsh/
                     </a>
                 </p>
                 <p style="opacity: 0.8; font-size: 0.9em;">
                     用纯粹的执念，创造不可能的奇迹 ✨<br>
-                    世界首个纯Bash椭圆曲线密码学实现
+                    这是世界首个零依赖纯Bash椭圆曲线密码学实现
                 </p>
-            </div>
-        </footer>
+            </footer>
+        </div>
     </div>
-    
+
     <script>
-        // 增强的交互效果
         document.addEventListener('DOMContentLoaded', function() {
-            // 为演示按钮添加点击效果
-            const demoButtons = document.querySelectorAll('.demo-button');
-            demoButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    this.style.transform = 'translateY(-2px) scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = 'translateY(-2px)';
-                        
-                        const demoType = this.getAttribute('onclick').match(/'([^']+)'/)[1];
-                        let message = '';
-                        
-                        switch(demoType) {
-                            case 'basic':
-                                message = '🎯 基础概念演示\n\n将展示：\n• 十六进制转换算法\n• 大数运算原理\n• 椭圆曲线点运算\n• 纯Bash数学引擎\n\n完全零外部依赖！';
-                                break;
-                            case 'multi':
-                                message = '🔀 多曲线展示\n\n将展示：\n• 9种标准椭圆曲线\n• 不同曲线的参数特点\n• 智能曲线推荐\n• 交互式曲线选择\n\n体验密码学多样性！';
-                                break;
-                            case 'full':
-                                message = '⚡ 完整功能体验\n\n将展示：\n• 完整ECDSA签名流程\n• 密钥生成和验证\n• 多曲线支持\n• 企业级安全特性\n\n专业级密码学工具！';
-                                break;
+            // 平滑滚动导航
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href !== '#') {
+                        e.preventDefault();
+                        const element = document.querySelector(href);
+                        if (element) {
+                            element.scrollIntoView({ behavior: 'smooth' });
                         }
-                        
-                        alert(message);
-                    }, 150);
-                });
-            });
-            
-            // 为卡片添加悬停效果
-            const cards = document.querySelectorAll('.crypto-card, .achievement-card, .doc-card');
-            cards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-8px)';
-                });
-                
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                });
-            });
-            
-            // 添加滚动动画
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.animation = 'fadeIn 0.8s ease-out';
-                        entry.target.style.opacity = '1';
                     }
                 });
             });
-            
-            document.querySelectorAll('.section').forEach(section => {
-                section.style.opacity = '0';
-                observer.observe(section);
-            });
-            
-            // 添加表格行悬停效果
-            const tableRows = document.querySelectorAll('.curve-table tr');
-            tableRows.forEach(row => {
-                row.addEventListener('mouseenter', function() {
-                    this.style.backgroundColor = 'rgba(102, 126, 234, 0.05)';
-                });
-                
-                row.addEventListener('mouseleave', function() {
-                    this.style.backgroundColor = '';
+
+            // 卡片悬停效果
+            document.querySelectorAll('.card, .doc-link').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transition = 'all 0.3s ease';
                 });
             });
         });
-        
-        // 运行演示函数
-        function runDemo(type) {
-            console.log(`运行${type}类型演示...`);
-            // 这里可以添加实际的演示运行逻辑
-            // 例如：window.location.href = `demo_${type}.sh`;
-        }
     </script>
 </body>
 </html>
