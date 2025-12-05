@@ -82,11 +82,15 @@ Various test scripts demonstrating functionality and validating against OpenSSL:
 
 ### Documentation
 
+**Learning Path (from beginner to expert):**
+1. `index.html` - Interactive learning center with visual navigation
+2. `MATH_CRYPTOGRAPHY_GUIDE.md` - Beginner-friendly cryptography guide (easy-to-understand concepts)
+3. `MATHEMATICS_DEEP_FOUNDATIONS.md` - Knowledge evolution from problems to solutions (WHY things were invented)
+4. `IMPLEMENTATION_GUIDE.md` - From math to code (HOW concepts translate to Bash implementation)
+5. `beccsh/MATH_DOCUMENTATION.md` - Detailed elliptic curve mathematics (formal definitions)
+
+**Supporting Documents:**
 - `README.md` - Project overview and quick start
-- `index.html` - Interactive learning center with visual navigation
-- `MATH_CRYPTOGRAPHY_GUIDE.md` - Beginner-friendly cryptography guide
-- `MATHEMATICS_DEEP_FOUNDATIONS.md` - Knowledge evolution from problems to solutions
-- `beccsh/MATH_DOCUMENTATION.md` - Detailed elliptic curve mathematics
 - `RELIABILITY_REPORT.md` - Quality assessment and test results
 - `CRYPTOGRAPHIC_SECURITY_ANALYSIS.md` - Security analysis and limitations
 
@@ -167,6 +171,44 @@ The entropy system uses multiple sources for randomness:
 - Compare output with OpenSSL using test scripts
 - Review `CRYPTOGRAPHIC_SECURITY_ANALYSIS.md` for known limitations
 - Check integer precision issues (common with very large numbers)
+
+### Learning the Implementation
+
+**To understand how bECCsh works, follow this guided path:**
+
+1. **Start with concepts** (`MATH_CRYPTOGRAPHY_GUIDE.md`)
+   - Learn modular arithmetic, elliptic curves, point operations
+   - Understand the "what" of cryptography
+   - Best for: Getting basic intuition
+
+2. **Understand the "why"** (`MATHEMATICS_DEEP_FOUNDATIONS.md`)
+   - See how concepts evolved from solving real problems
+   - Understand historical context (from 5000 BC to 2011)
+   - Understand design decisions and trade-offs
+   - Best for: Deep comprehension and research
+
+3. **Connect theory to code** (`IMPLEMENTATION_GUIDE.md`)
+   - See how each mathematical concept translates to Bash
+   - View actual code snippets and implementations
+   - Understand performance considerations
+   - Best for: Code understanding and debugging
+
+4. **Deep mathematical details** (`beccsh/MATH_DOCUMENTATION.md`)
+   - Formal definitions and rigorous mathematics
+   - Curve parameters and properties
+   - Best for: Mathematical verification
+
+**Example workflow for understanding point addition:**
+```
+1. Read "椭圆曲线运算" in MATH_CRYPTOGRAPHY_GUIDE.md
+   → Learn the geometric concept and formula
+2. Read "第三部分：椭圆曲线点操作" in MATHEMATICS_DEEP_FOUNDATIONS.md
+   → Understand why this operation is defined this way
+3. Read "第三部分：椭圆曲线点操作" in IMPLEMENTATION_GUIDE.md
+   → See the actual `ec_point_add()` function in Bash
+4. Study `lib/ec_point.sh` directly
+   → Understand performance optimization tricks
+```
 
 ## Important Implementation Details
 
