@@ -83,8 +83,11 @@ Various test scripts demonstrating functionality and validating against OpenSSL:
 ### Documentation
 
 - `README.md` - Project overview and quick start
-- `beccsh/README.md` - Professional edition documentation
-- `MATH_DOCUMENTATION.md` - Detailed elliptic curve mathematics
+- `index.html` - Interactive learning center with visual navigation
+- `MATH_CRYPTOGRAPHY_GUIDE.md` - Beginner-friendly cryptography guide
+- `MATHEMATICS_DEEP_FOUNDATIONS.md` - Knowledge evolution from problems to solutions
+- `beccsh/MATH_DOCUMENTATION.md` - Detailed elliptic curve mathematics
+- `RELIABILITY_REPORT.md` - Quality assessment and test results
 - `CRYPTOGRAPHIC_SECURITY_ANALYSIS.md` - Security analysis and limitations
 
 ## Key Architecture Patterns
